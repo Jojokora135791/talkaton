@@ -15,6 +15,10 @@ RUN dotnet publish src/Talkaton.Api/Talkaton.Api.csproj -c Release -o /app --no-
 # ---- runtime ----
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+
+# curl нужен только для docker healthcheck — в aspnet-образе нет ни его, ни wget.
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app ./
 
 ENV ASPNETCORE_URLS=http://+:8080
