@@ -16,15 +16,36 @@ public class ParticipantListApiTests(TalkatonApiFactory factory) : IClassFixture
 
         var response = await client.PostAsJsonAsync(
             "/api/participant-lists",
-            new CreateParticipantListRequest("  Дизайн-ревью  ", selected));
+            new CreateParticipantListRequest("  Дизайн-ревью  ", "teal", selected));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var created = await response.Content.ReadFromJsonAsync<ParticipantListDto>();
         Assert.Equal("Дизайн-ревью", created!.Name);
+        Assert.Equal("teal", created.Color);
         Assert.Equal(selected.Order(), created.Members.Select(x => x.Id).Order());
 
         var saved = await client.GetFromJsonAsync<List<ParticipantListDto>>("/api/participant-lists");
-        Assert.Contains(saved!, x => x.Id == created.Id && x.Members.Count == selected.Length);
+        Assert.Contains(saved!, x => x.Id == created.Id && x.Members.Count == selected.Length && x.Color == "teal");
+    }
+
+    [Fact]
+    public async Task Список_успешно_удаляется()
+    {
+        var client = await factory.SignInAsync($"Удаляющий списки {Guid.NewGuid():N}");
+        var createResponse = await client.PostAsJsonAsync(
+            "/api/participant-lists",
+            new CreateParticipantListRequest("Временный список", "purple", []));
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        var created = await createResponse.Content.ReadFromJsonAsync<ParticipantListDto>();
+
+        var deleteResponse = await client.DeleteAsync($"/api/participant-lists/{created!.Id}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
+
+        var saved = await client.GetFromJsonAsync<List<ParticipantListDto>>("/api/participant-lists");
+        Assert.DoesNotContain(saved!, x => x.Id == created.Id);
+
+        var secondDelete = await client.DeleteAsync($"/api/participant-lists/{created.Id}");
+        Assert.Equal(HttpStatusCode.NotFound, secondDelete.StatusCode);
     }
 
     [Fact]
@@ -34,7 +55,7 @@ public class ParticipantListApiTests(TalkatonApiFactory factory) : IClassFixture
 
         var response = await client.PostAsJsonAsync(
             "/api/participant-lists",
-            new CreateParticipantListRequest(new string('я', 201), []));
+            new CreateParticipantListRequest(new string('я', 201), "blue", []));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

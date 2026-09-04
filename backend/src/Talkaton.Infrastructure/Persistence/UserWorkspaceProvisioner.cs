@@ -117,9 +117,9 @@ public static class UserWorkspaceProvisioner
         }
 
         db.ParticipantLists.AddRange(
-            NewList(owner.Id, "Команда Платформы", 0, team.Take(5)),
-            NewList(owner.Id, "Продуктовый штаб", 1, team.Skip(2).Take(3)),
-            NewList(owner.Id, "Биллинг ПД", 2, team.Skip(4)));
+            NewList(owner.Id, "Команда Платформы", "blue", 0, team.Take(5)),
+            NewList(owner.Id, "Продуктовый штаб", "purple", 1, team.Skip(2).Take(3)),
+            NewList(owner.Id, "Биллинг ПД", "amber", 2, team.Skip(4)));
 
         // Понедельник недели, в которую человек вошёл впервые.
         var localNow = nowUtc.AddMinutes(utcOffsetMinutes);
@@ -152,10 +152,26 @@ public static class UserWorkspaceProvisioner
             Meeting(work, owner, "Разбор инцидента", At(6, 15, 0), At(6, 16, 0), "incident-review", team.Skip(3).Take(2)),
         };
 
-        // Всё-дневная встреча — чтобы полоса «весь день» над сеткой не пустовала.
-        var birthday = Meeting(birthdays, owner, $"День рождения — {team[3].DisplayName}", At(4, 0, 0), At(4, 23, 59), null, []);
-        birthday.IsAllDay = true;
-        seeded.Add(birthday);
+        // Всё-дневные встречи — чтобы полоса «весь день» над сеткой не пустовала:
+        // Дни рождения с разными скоупами (dept / fav / all) и отпуск.
+        var bday1 = Meeting(birthdays, owner, $"День рождения — {team[0].DisplayName}", At(1, 0, 0), At(1, 23, 59), "bday:dept", []);
+        bday1.IsAllDay = true;
+        bday1.Description = "scope:dept";
+        seeded.Add(bday1);
+
+        var vacation = Meeting(personal, owner, "Отпуск: И. Смирнов", At(2, 0, 0), At(2, 23, 59), "vacation", []);
+        vacation.IsAllDay = true;
+        seeded.Add(vacation);
+
+        var bday2 = Meeting(birthdays, owner, $"День рождения — {team[1].DisplayName}", At(4, 0, 0), At(4, 23, 59), "bday:fav", []);
+        bday2.IsAllDay = true;
+        bday2.Description = "scope:fav";
+        seeded.Add(bday2);
+
+        var bday3 = Meeting(birthdays, owner, $"День рождения — {team[3].DisplayName}", At(9, 0, 0), At(9, 23, 59), "bday:all", []);
+        bday3.IsAllDay = true;
+        bday3.Description = "scope:all";
+        seeded.Add(bday3);
 
         // Витрина макета: повторяется каждую среду, с артефактами и статусами участников.
         var headquarters = Meeting(
@@ -194,13 +210,14 @@ public static class UserWorkspaceProvisioner
         IsVisible = isVisible,
     };
 
-    private static ParticipantList NewList(Guid ownerId, string name, int sortOrder, IEnumerable<User> members)
+    private static ParticipantList NewList(Guid ownerId, string name, string color, int sortOrder, IEnumerable<User> members)
     {
         var list = new ParticipantList
         {
             Id = Guid.NewGuid(),
             OwnerId = ownerId,
             Name = name,
+            Color = color,
             SortOrder = sortOrder,
         };
 

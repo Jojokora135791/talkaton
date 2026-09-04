@@ -93,6 +93,29 @@
       border-left-style: solid;
     }
 
+    &--birthday {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--tk-bday-bg);
+      border: 1px solid var(--tk-bday-border);
+      border-left: 3px solid var(--ev-rose-b);
+      color: var(--tk-bday-text);
+
+      svg {
+        width: 11px;
+        height: 11px;
+        flex: none;
+        stroke: var(--ev-rose-b);
+      }
+
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
     &--selected {
       border-color: var(--tk-accent-contrast);
     }

@@ -82,11 +82,50 @@
   padding: 0;
   list-style: none;
 
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: var(--tk-radius-sm);
+    padding-right: var(--tk-space-1);
+
+    &:hover .calendars__gear {
+      opacity: 1;
+    }
+  }
+
   &__row {
     display: flex;
     align-items: center;
     gap: var(--tk-space-2);
     cursor: pointer;
+    flex: 1;
+  }
+
+  &__gear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--tk-radius-sm);
+    color: var(--tk-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s;
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
   }
 
   /* Цвет календаря приезжает из базы, поэтому единственный способ покрасить — переменная. */
@@ -103,6 +142,124 @@
   }
 }
 
+.popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 119;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+.popover {
+  position: fixed;
+  z-index: 120;
+  width: 280px;
+  background: var(--tk-surface-panel);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-lg);
+  box-shadow: var(--tk-shadow-overlay);
+  padding: var(--tk-space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .pop-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tk-text-muted);
+    letter-spacing: 0.4px;
+    padding: 6px 8px;
+  }
+
+  .pop-opt {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    border-radius: var(--tk-radius-md);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    color: var(--tk-text-primary);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+    }
+
+    .pd {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--tk-radius-md);
+      background: var(--tk-surface-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+      color: var(--tk-text-secondary);
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .pl {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pn {
+      font-size: var(--tk-font-size-md);
+      font-weight: 500;
+      color: var(--tk-text-primary);
+    }
+
+    .ps {
+      font-size: var(--tk-font-size-sm);
+      color: var(--tk-text-muted);
+      margin-top: 1px;
+    }
+
+    .pcheck {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--tk-border-strong);
+      flex: none;
+      position: relative;
+    }
+
+    &.on {
+      .pd {
+        background: color-mix(in srgb, var(--tk-accent) 24%, var(--tk-surface-raised));
+        color: var(--tk-accent);
+      }
+
+      .pcheck {
+        border-color: var(--tk-accent);
+        background: var(--tk-accent);
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 1px;
+          left: 4px;
+          width: 5px;
+          height: 9px;
+          border: 2px solid var(--tk-accent-contrast);
+          border-top: none;
+          border-left: none;
+          transform: rotate(45deg);
+        }
+      }
+    }
+  }
+}
+
 .lists {
   display: flex;
   flex-direction: column;
@@ -116,6 +273,32 @@
     align-items: center;
     gap: var(--tk-space-2);
     min-height: 30px;
+    padding: 0 var(--tk-space-1);
+    border-radius: var(--tk-radius-sm);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+
+      .lists__delete {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__main-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    flex: 1;
+    min-width: 0;
+    padding: 2px 0;
+    background: transparent;
+    border: none;
+    color: var(--tk-text-primary);
+    font-family: inherit;
+    font-size: var(--tk-font-size-md);
+    cursor: pointer;
+    text-align: left;
   }
 
   &__icon {
@@ -125,7 +308,6 @@
     height: 26px;
     flex: 0 0 26px;
     border-radius: var(--tk-radius-sm);
-    background: var(--tk-list-color);
     color: var(--tk-accent-contrast);
 
     svg {
@@ -141,6 +323,32 @@
   &__count {
     color: var(--tk-text-muted);
     font-size: var(--tk-font-size-sm);
+  }
+
+  &__delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--tk-radius-sm);
+    color: var(--tk-text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.12s;
+
+    &:hover {
+      background: var(--tk-surface-raised);
+      color: var(--tk-status-declined);
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 
   &__empty {

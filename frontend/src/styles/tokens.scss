@@ -80,5 +80,21 @@
   --tk-z-event: 2;
   --tk-z-now-line: 5;
   --tk-z-dialog: 40;
-  --tk-z-toast: 50;
+  --tk-z-popover: 60;
+  --tk-z-toast: 200;
+
+  /* Палитра прототипа template_1.html */
+  --ev-blue-b: #5b8ef0;
+  --ev-teal-b: #38b6a2;
+  --ev-purple-b: #9d84e8;
+  --ev-amber-b: #e0a94a;
+  --ev-rose-b: #e0789a;
+  --ev-grey-b: #7c8797;
+
+  --tk-bday-bg: rgba(224, 120, 154, 0.16);
+  --tk-bday-border: rgba(224, 120, 154, 0.35);
+  --tk-bday-text: #f0c2d1;
+  --tk-vacation-bg: rgba(59, 111, 212, 0.22);
+  --tk-vacation-border: rgba(91, 142, 240, 0.4);
+  --tk-vacation-text: #bcd2ff;
 }

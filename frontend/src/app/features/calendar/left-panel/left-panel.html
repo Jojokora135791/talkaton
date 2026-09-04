@@ -13,7 +13,7 @@
   <h2 class="section-title">Мои календари</h2>
   <ul class="calendars">
     @for (calendar of calendars(); track calendar.id) {
-      <li>
+      <li class="calendars__item">
         <label class="calendars__row">
           <input
             type="checkbox"
@@ -26,14 +26,72 @@
             {{ calendar.name }}
           </span>
         </label>
+        @if (isBirthdayCalendar(calendar)) {
+          <button
+            type="button"
+            class="calendars__gear"
+            title="Кого показывать"
+            aria-label="Кого показывать"
+            (click)="$event.stopPropagation(); togglePopover($event)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+        }
       </li>
     }
   </ul>
 </section>
 
-<section>
-  <div class="section-title section-title--row">
-    <h2 class="section-title__text">Списки участников</h2>
+@if (showBdayPopover()) {
+  <button type="button" class="popover-backdrop" aria-label="Закрыть" (click)="closePopover()"></button>
+  <div class="popover show" [style.top.px]="popoverTop()" [style.left.px]="popoverLeft()">
+    <div class="pop-title">Показывать дни рождения</div>
+    <button type="button" class="pop-opt" [class.on]="birthdayScope() === 'all'" (click)="selectScope('all')">
+      <span class="pd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      </span>
+      <div class="pl">
+        <div class="pn">Всех сотрудников</div>
+        <div class="ps">Все дни рождения в компании</div>
+      </div>
+      <div class="pcheck"></div>
+    </button>
+    <button type="button" class="pop-opt" [class.on]="birthdayScope() === 'dept'" (click)="selectScope('dept')">
+      <span class="pd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </span>
+      <div class="pl">
+        <div class="pn">Только подразделение</div>
+        <div class="ps">Коллеги из моего отдела</div>
+      </div>
+      <div class="pcheck"></div>
+    </button>
+    <button type="button" class="pop-opt" [class.on]="birthdayScope() === 'fav'" (click)="selectScope('fav')">
+      <span class="pd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      </span>
+      <div class="pl">
+        <div class="pn">Только избранные</div>
+        <div class="ps">Отмеченные звёздочкой</div>
+      </div>
+      <div class="pcheck"></div>
+    </button>
+  </div>
+}
+
+<section class="section">
+  <div class="section-title">
+    <h2>Списки участников</h2>
     <button
       type="button"
       class="section-title__add"
@@ -48,15 +106,28 @@
   <ul class="lists">
     @for (list of participantLists(); track list.id) {
       <li class="lists__row">
-        <span class="lists__icon" [style.--tk-list-color]="'var(--tk-avatar-' + ($index % 6) + ')'" aria-hidden="true">
+        <button type="button" class="lists__main-btn" (click)="listClicked.emit(list)">
+          <span class="lists__icon" [style.background]="'var(--ev-' + (list.color || 'blue') + '-b)'" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </span>
+          <span class="lists__name">{{ list.name }}</span>
+          <span class="lists__count">{{ list.members.length }}</span>
+        </button>
+        <button
+          type="button"
+          class="lists__delete"
+          title="Удалить список"
+          aria-label="Удалить список"
+          (click)="listDeleted.emit(list)"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
           </svg>
-        </span>
-        <span class="lists__name">{{ list.name }}</span>
-        <span class="lists__count">{{ list.members.length }}</span>
+        </button>
       </li>
     } @empty {
       <li class="lists__empty">Пока ни одного списка</li>

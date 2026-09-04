@@ -83,6 +83,18 @@ export class MonthGrid {
       cells.slice(week * DAYS, week * DAYS + DAYS),
     );
   });
+
+  protected isBirthday(occurrence: Occurrence): boolean {
+    return (
+      occurrence.calendarName.toLowerCase().includes('рождения') ||
+      occurrence.title.toLowerCase().includes('день рождения') ||
+      (occurrence.talkRoomSlug?.startsWith('bday:') ?? false)
+    );
+  }
+
+  protected birthdayName(title: string): string {
+    return title.replace(/^День рождения\s*[—–-]?\s*/i, '').trim() || title;
+  }
 }
 
 /** Раскладываем вхождения по дням: длинная встреча попадает в каждый задетый день. */

@@ -110,7 +110,7 @@ export class WeekGrid {
   private readonly scrollRef = viewChild.required<ElementRef<HTMLElement>>('scroller');
 
   private readonly drag = signal<DragState | null>(null);
-  private readonly preview = signal<{ start: Date; end: Date } | null>(null);
+  protected readonly preview = signal<{ start: Date; end: Date } | null>(null);
   private readonly now = signal(new Date());
 
   protected readonly hours = Array.from({ length: 24 }, (_, hour) => `${hour}`.padStart(2, '0') + ':00');
@@ -277,8 +277,26 @@ export class WeekGrid {
     this.occurrenceMoved.emit({ occurrence: drag.occurrence, start: preview.start, end: preview.end });
   }
 
+  protected readonly formatTime = formatTime;
+
   protected onAllDaySelected(occurrence: Occurrence): void {
     this.occurrenceSelected.emit(occurrence);
+  }
+
+  protected isBirthday(item: Occurrence): boolean {
+    return (
+      item.calendarName.toLowerCase().includes('рождения') ||
+      item.title.toLowerCase().includes('день рождения') ||
+      (item.talkRoomSlug?.startsWith('bday:') ?? false)
+    );
+  }
+
+  protected birthdayName(title: string): string {
+    return title.replace(/^День рождения\s*[—–-]?\s*/i, '').trim() || title;
+  }
+
+  protected isVacation(item: Occurrence): boolean {
+    return item.talkRoomSlug === 'vacation' || item.title.toLowerCase().startsWith('отпуск');
   }
 
   /** Двойной щелчок по пустому месту — создать встречу на этот час. */

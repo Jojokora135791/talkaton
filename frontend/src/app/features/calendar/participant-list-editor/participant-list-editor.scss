@@ -140,6 +140,32 @@
   }
 }
 
+.color-picker {
+  display: flex;
+  gap: var(--tk-space-2);
+  align-items: center;
+  padding: 4px 0;
+}
+
+.color-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.12s, box-shadow 0.12s;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &--selected {
+    box-shadow: 0 0 0 2px var(--tk-surface-panel), 0 0 0 4px var(--tk-accent);
+    transform: scale(1.1);
+  }
+}
+
 .search {
   display: flex;
   align-items: center;

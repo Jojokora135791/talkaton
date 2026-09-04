@@ -22,7 +22,7 @@ import {
 } from './participant-list-editor/participant-list-editor';
 import { TalkatonApi } from '../../core/api/talkaton-api';
 import { ReminderService } from '../reminders/reminder.service';
-import { Calendar, EditScope, Health, Occurrence, ParticipantStatus, User } from '../../core/api/models';
+import { Calendar, EditScope, Health, Occurrence, ParticipantList, ParticipantStatus, User } from '../../core/api/models';
 import {
   addDays,
   addMinutes,
@@ -142,19 +142,39 @@ export class CalendarPage {
     this.listSaving.set(true);
     this.listError.set(null);
     this.api
-      .createParticipantList(draft.name, draft.memberIds)
+      .createParticipantList(draft.name, draft.color, draft.memberIds)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.listSaving.set(false);
           this.listEditorOpen.set(false);
           this.store.load();
+          this.store.showToast(`Список «${draft.name}» создан`);
         },
         error: () => {
           this.listSaving.set(false);
           this.listError.set('Не удалось создать список. Проверьте соединение и попробуйте ещё раз.');
         },
       });
+  }
+
+  protected onListDeleted(list: ParticipantList): void {
+    this.api
+      .deleteParticipantList(list.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.store.load();
+          this.store.showToast(`Список «${list.name}» удалён`);
+        },
+        error: () => {
+          this.store.showToast(`Не удалось удалить список «${list.name}»`);
+        },
+      });
+  }
+
+  protected onListClicked(list: ParticipantList): void {
+    this.store.showToast(`Список «${list.name}»: ${list.members.length} участников`);
   }
 
   protected onOccurrenceSelected(occurrence: Occurrence): void {
@@ -164,6 +184,7 @@ export class CalendarPage {
   protected onOccurrenceMoved(move: OccurrenceMove): void {
     this.store.moveOccurrence(move.occurrence, move.start, move.end);
     this.reminders.reload();
+    this.store.showToast('Встреча перенесена');
   }
 
   protected onRsvp(status: ParticipantStatus): void {
@@ -255,6 +276,7 @@ export class CalendarPage {
         talkRoomSlug: draft.talkRoomSlug,
         participantIds: draft.participantIds,
         reminderMinutesBefore: draft.reminderMinutesBefore,
+        generateArtifacts: draft.generateArtifacts,
       });
     } else if (seed.eventId) {
       this.store.updateEvent(

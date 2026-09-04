@@ -235,6 +235,28 @@ public static class EventEndpoints
             });
         }
 
+        if (request.GenerateArtifacts == true)
+        {
+            meeting.Artifacts.Add(new EventArtifact
+            {
+                Id = Guid.NewGuid(),
+                EventId = meeting.Id,
+                Kind = ArtifactKind.Recording,
+                Title = "Запись встречи",
+                Subtitle = "Автозапись Толк",
+                SortOrder = 0,
+            });
+            meeting.Artifacts.Add(new EventArtifact
+            {
+                Id = Guid.NewGuid(),
+                EventId = meeting.Id,
+                Kind = ArtifactKind.Protocol,
+                Title = "Протокол совещания",
+                Subtitle = "ИИ-конспект формируется",
+                SortOrder = 1,
+            });
+        }
+
         db.Events.Add(meeting);
         await db.SaveChangesAsync(ct);
 

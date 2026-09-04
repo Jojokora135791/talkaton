@@ -20,17 +20,32 @@
             </button>
 
             @for (chip of day.chips; track chip.occurrence.eventId + chip.occurrence.occurrenceStartUtc) {
-              <button
-                type="button"
-                class="month__chip"
-                [class.month__chip--selected]="chip.selected"
-                [class.month__chip--tentative]="chip.occurrence.myStatus === 'tentative'"
-                [style.--tk-event-color]="chip.occurrence.calendarColor"
-                [title]="chip.label"
-                (click)="occurrenceSelected.emit(chip.occurrence)"
-              >
-                {{ chip.label }}
-              </button>
+              @if (isBirthday(chip.occurrence)) {
+                <button
+                  type="button"
+                  class="month__chip month__chip--birthday"
+                  [class.month__chip--selected]="chip.selected"
+                  [title]="chip.label"
+                  (click)="occurrenceSelected.emit(chip.occurrence)"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M12 4a1 1 0 0 0-1 1c0 1 1 2 1 2s1-1 1-2a1 1 0 0 0-1-1z" />
+                  </svg>
+                  <span>{{ birthdayName(chip.occurrence.title) }}</span>
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="month__chip"
+                  [class.month__chip--selected]="chip.selected"
+                  [class.month__chip--tentative]="chip.occurrence.myStatus === 'tentative'"
+                  [style.--tk-event-color]="chip.occurrence.calendarColor"
+                  [title]="chip.label"
+                  (click)="occurrenceSelected.emit(chip.occurrence)"
+                >
+                  {{ chip.label }}
+                </button>
+              }
             }
 
             @if (day.hiddenCount > 0) {

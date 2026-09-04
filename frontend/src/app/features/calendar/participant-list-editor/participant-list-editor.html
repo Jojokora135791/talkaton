@@ -23,6 +23,22 @@
       />
     </label>
 
+    <div class="field">
+      <span class="field__label">Цвет списка</span>
+      <div class="color-picker" role="radiogroup" aria-label="Цвет списка">
+        @for (c of colors; track c) {
+          <button
+            type="button"
+            class="color-dot"
+            [class.color-dot--selected]="color() === c"
+            [style.background]="'var(--ev-' + c + '-b)'"
+            [attr.aria-label]="c"
+            (click)="color.set(c)"
+          ></button>
+        }
+      </div>
+    </div>
+
     <label class="field">
       <span class="field__label">Участники</span>
       <span class="search">

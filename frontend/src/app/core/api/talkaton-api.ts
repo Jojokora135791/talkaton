@@ -105,8 +105,12 @@ export class TalkatonApi {
     return this.http.get<ParticipantList[]>('/api/participant-lists');
   }
 
-  createParticipantList(name: string, memberIds: string[]): Observable<ParticipantList> {
-    return this.http.post<ParticipantList>('/api/participant-lists', { name, memberIds });
+  createParticipantList(name: string, color: string, memberIds: string[]): Observable<ParticipantList> {
+    return this.http.post<ParticipantList>('/api/participant-lists', { name, color, memberIds });
+  }
+
+  deleteParticipantList(id: string): Observable<void> {
+    return this.http.delete<void>(`/api/participant-lists/${id}`);
   }
 
   private scopeParams(scope: EditScope, occurrenceStartUtc?: string): HttpParams {

@@ -22,6 +22,7 @@ export interface EventDraft {
   talkRoomSlug: string | null;
   participantIds: string[];
   reminderMinutesBefore: number;
+  generateArtifacts?: boolean;
 }
 
 /** Начальное состояние формы: либо пустая встреча на выбранный слот, либо существующая. */
@@ -60,6 +61,7 @@ export class EventEditor {
   readonly cancelled = output<void>();
 
   protected readonly reminderChoices = REMINDER_CHOICES;
+  protected readonly eventColors: readonly string[] = ['blue', 'teal', 'purple', 'amber', 'rose', 'grey'];
 
   protected readonly title = linkedSignal(() => this.seed().title);
   protected readonly calendarId = linkedSignal(() => this.seed().calendarId);
@@ -73,6 +75,11 @@ export class EventEditor {
   protected readonly reminder = linkedSignal(() => this.seed().reminderMinutesBefore);
   protected readonly participants = linkedSignal(() => new Set(this.seed().participantIds));
 
+  protected readonly selectedColor = signal<string>('blue');
+  protected readonly tolkVideo = signal<boolean>(true);
+  protected readonly recordAndAi = signal<boolean>(true);
+  protected readonly repeatWeekly = signal<boolean>(false);
+
   protected readonly validationError = signal<string | null>(null);
 
   protected readonly heading = computed(() =>
@@ -83,6 +90,11 @@ export class EventEditor {
   protected readonly recurrenceChoices = computed(() =>
     recurrenceOptions(fromDateTimeInputs(this.dateValue(), this.startTime()) ?? this.seed().start),
   );
+
+  protected readonly chosenPeople = computed(() => {
+    const chosen = this.participants();
+    return this.people().filter((p) => chosen.has(p.id));
+  });
 
   protected reminderLabel(minutes: number): string {
     return minutes === 0 ? 'Не напоминать' : `За ${minutes} мин`;
@@ -103,14 +115,72 @@ export class EventEditor {
     });
   }
 
-  /** Кнопка списка добавляет всех разом — на макете списки для этого и заведены. */
-  protected addList(list: ParticipantList): void {
+  protected initials(name: string): string {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+  }
+
+  protected selectColor(color: string): void {
+    this.selectedColor.set(color);
+    // Синхронизируем календарь при клике на цвет
+    const colorMap: Record<string, string> = {
+      blue: 'рабочие',
+      teal: 'личное',
+      rose: 'рождения',
+      amber: 'задачи',
+    };
+    const needle = colorMap[color];
+    if (needle) {
+      const cal = this.calendars().find((c) => c.name.toLowerCase().includes(needle));
+      if (cal) {
+        this.calendarId.set(cal.id);
+      }
+    }
+  }
+
+  protected toggleTolkVideo(on: boolean): void {
+    this.tolkVideo.set(on);
+    if (on && !this.talkRoomSlug().trim()) {
+      this.talkRoomSlug.set('room-' + Math.random().toString(36).slice(2, 8));
+    } else if (!on) {
+      this.talkRoomSlug.set('');
+    }
+  }
+
+  protected toggleRepeatWeekly(on: boolean): void {
+    this.repeatWeekly.set(on);
+    if (on) {
+      const choices = this.recurrenceChoices();
+      const weekly = choices.find((c) => c.value !== null);
+      if (weekly) {
+        this.recurrence.set(weekly.value);
+      }
+    } else {
+      this.recurrence.set(null);
+    }
+  }
+
+  protected isListFullyAdded(list: ParticipantList): boolean {
+    if (list.members.length === 0) return false;
+    const chosen = this.participants();
+    return list.members.every((m) => chosen.has(m.id));
+  }
+
+  protected toggleList(list: ParticipantList): void {
+    const isAdded = this.isListFullyAdded(list);
     this.participants.update((chosen) => {
       const next = new Set(chosen);
       for (const member of list.members) {
-        next.add(member.id);
+        if (isAdded) {
+          next.delete(member.id);
+        } else {
+          next.add(member.id);
+        }
       }
-
       return next;
     });
   }
@@ -150,6 +220,7 @@ export class EventEditor {
       talkRoomSlug: this.talkRoomSlug().trim() || null,
       participantIds: [...this.participants()],
       reminderMinutesBefore: this.reminder(),
+      generateArtifacts: this.recordAndAi(),
     });
   }
 }

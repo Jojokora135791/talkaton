@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CalendarView } from '../calendar-store';
 
@@ -27,10 +27,32 @@ export class CalendarToolbar {
   readonly viewChanged = output<CalendarView>();
   readonly searchChanged = output<string>();
 
+  protected readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  protected readonly searchOpen = signal(false);
+
   protected readonly views: readonly ViewOption[] = [
     { value: 'day', label: 'День', shortcut: 'D' },
     { value: 'week', label: 'Неделя', shortcut: 'W' },
     { value: 'month', label: 'Месяц', shortcut: 'M' },
     { value: 'year', label: 'Год', shortcut: 'Y' },
   ];
+
+  protected toggleSearch(): void {
+    const next = !this.searchOpen();
+    this.searchOpen.set(next);
+    if (next) {
+      setTimeout(() => this.searchInput()?.nativeElement.focus(), 50);
+    }
+  }
+
+  protected onSearchBlur(): void {
+    if (!this.search()) {
+      this.searchOpen.set(false);
+    }
+  }
+
+  protected closeSearch(): void {
+    this.searchChanged.emit('');
+    this.searchOpen.set(false);
+  }
 }

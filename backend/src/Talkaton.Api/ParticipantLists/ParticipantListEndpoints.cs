@@ -5,14 +5,18 @@ using Talkaton.Infrastructure.Persistence;
 
 namespace Talkaton.Api.ParticipantLists;
 
-public record ParticipantListDto(Guid Id, string Name, int SortOrder, IReadOnlyList<UserDto> Members);
+public record ParticipantListDto(Guid Id, string Name, string Color, int SortOrder, IReadOnlyList<UserDto> Members);
 
-public record CreateParticipantListRequest(string Name, Guid[]? MemberIds);
+public record CreateParticipantListRequest(string Name, string? Color, Guid[]? MemberIds);
 
 public static class ParticipantListEndpoints
 {
     private const int MaxNameLength = 200;
     private const int MaxMembers = 100;
+    private static readonly HashSet<string> AllowedColors = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "blue", "teal", "purple", "amber", "rose",
+    };
 
     public static IEndpointRouteBuilder MapParticipantListEndpoints(this IEndpointRouteBuilder app)
     {
@@ -58,6 +62,12 @@ public static class ParticipantListEndpoints
                         statusCode: StatusCodes.Status400BadRequest);
                 }
 
+                var color = request.Color?.Trim().ToLowerInvariant();
+                if (string.IsNullOrWhiteSpace(color) || !AllowedColors.Contains(color))
+                {
+                    color = "blue";
+                }
+
                 var lastOrder = await db.ParticipantLists
                     .Where(x => x.OwnerId == owner.Id)
                     .MaxAsync(x => (int?)x.SortOrder, ct) ?? -1;
@@ -67,6 +77,7 @@ public static class ParticipantListEndpoints
                     Id = Guid.NewGuid(),
                     OwnerId = owner.Id,
                     Name = name,
+                    Color = color,
                     SortOrder = lastOrder + 1,
                 };
 
@@ -92,12 +103,35 @@ public static class ParticipantListEndpoints
             .Produces<ParticipantListDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        group.MapDelete("/{id:guid}", async (
+                Guid id,
+                CurrentUser currentUser,
+                TalkatonDbContext db,
+                CancellationToken ct) =>
+            {
+                var list = await db.ParticipantLists
+                    .FirstOrDefaultAsync(x => x.Id == id && x.OwnerId == currentUser.Required.Id, ct);
+                if (list is null)
+                {
+                    return Results.NotFound();
+                }
+
+                db.ParticipantLists.Remove(list);
+                await db.SaveChangesAsync(ct);
+                return Results.NoContent();
+            })
+            .WithName("DeleteParticipantList")
+            .WithSummary("Удаление списка участников")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound);
+
         return app;
     }
 
     private static ParticipantListDto Map(ParticipantList list) => new(
         list.Id,
         list.Name,
+        string.IsNullOrWhiteSpace(list.Color) ? "blue" : list.Color,
         list.SortOrder,
         list.Members
             .Where(x => x.User is not null)

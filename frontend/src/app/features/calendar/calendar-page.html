@@ -5,10 +5,14 @@
       [participantLists]="store.participantLists()"
       [selectedDate]="store.anchor()"
       [busyDays]="busyDays()"
+      [birthdayScope]="store.birthdayScope()"
       (createRequested)="openCreateEditor()"
       (daySelected)="onDayPicked($event)"
       (calendarToggled)="onCalendarToggled($event)"
       (listCreateRequested)="openListEditor()"
+      (birthdayScopeChanged)="store.setBirthdayScope($event)"
+      (listDeleted)="onListDeleted($event)"
+      (listClicked)="onListClicked($event)"
     />
   </aside>
 
@@ -106,4 +110,10 @@
     (saved)="onListCreated($event)"
     (cancelled)="closeListEditor()"
   />
+}
+
+@if (store.toastMessage(); as toast) {
+  <div class="toast-popup" role="status" aria-live="polite">
+    {{ toast }}
+  </div>
 }

@@ -56,7 +56,7 @@ describe('ParticipantListEditor', () => {
     fixture.detectChanges();
     component.submit();
 
-    expect(saved).toEqual([{ name: 'Дизайн-ревью', memberIds: [people[0].id] }]);
+    expect(saved).toEqual([{ name: 'Дизайн-ревью', color: 'blue', memberIds: [people[0].id] }]);
   });
 
   it('не создаёт пустой список', () => {

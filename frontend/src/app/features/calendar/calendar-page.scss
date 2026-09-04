@@ -126,3 +126,33 @@
     font-weight: 600;
   }
 }
+
+.toast-popup {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--tk-z-toast);
+  padding: 11px 18px;
+  background: var(--tk-surface-overlay);
+  border: 1px solid var(--tk-border-strong);
+  border-radius: var(--tk-radius-md);
+  color: var(--tk-text-primary);
+  font-size: var(--tk-font-size-md);
+  font-weight: 500;
+  box-shadow: var(--tk-shadow-overlay);
+  pointer-events: none;
+  animation: toast-in 0.2s ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

@@ -69,6 +69,7 @@ export interface EventDetails {
 export interface ParticipantList {
   id: string;
   name: string;
+  color: string;
   sortOrder: number;
   members: User[];
 }
@@ -84,6 +85,7 @@ export interface CreateEventRequest {
   talkRoomSlug?: string | null;
   participantIds?: string[];
   reminderMinutesBefore?: number | null;
+  generateArtifacts?: boolean;
 }
 
 export interface UpdateEventRequest {

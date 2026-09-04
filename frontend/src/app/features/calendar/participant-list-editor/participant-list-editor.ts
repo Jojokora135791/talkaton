@@ -4,6 +4,7 @@ import { User } from '../../../core/api/models';
 
 export interface ParticipantListDraft {
   readonly name: string;
+  readonly color: string;
   readonly memberIds: string[];
 }
 
@@ -22,6 +23,8 @@ export class ParticipantListEditor {
   readonly saved = output<ParticipantListDraft>();
   readonly cancelled = output<void>();
 
+  protected readonly colors: readonly string[] = ['blue', 'teal', 'purple', 'amber', 'rose'];
+  protected readonly color = signal<string>('blue');
   protected readonly name = signal('');
   protected readonly query = signal('');
   protected readonly chosen = signal<ReadonlySet<string>>(new Set<string>());
@@ -70,6 +73,6 @@ export class ParticipantListEditor {
     }
 
     this.validationError.set(null);
-    this.saved.emit({ name, memberIds: [...this.chosen()] });
+    this.saved.emit({ name, color: this.color(), memberIds: [...this.chosen()] });
   }
 }

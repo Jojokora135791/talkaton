@@ -10,6 +10,8 @@ public class ParticipantList
 
     public required string Name { get; set; }
 
+    public string Color { get; set; } = "blue";
+
     public int SortOrder { get; set; }
 
     public ICollection<ParticipantListMember> Members { get; set; } = new List<ParticipantListMember>();

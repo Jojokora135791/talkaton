@@ -19,6 +19,22 @@
       />
     </label>
 
+    <div class="field">
+      <span class="field__label">Цвет / календарь</span>
+      <div class="color-picker" role="radiogroup" aria-label="Цвет встречи">
+        @for (c of eventColors; track c) {
+          <button
+            type="button"
+            class="color-dot"
+            [class.color-dot--selected]="selectedColor() === c"
+            [style.background]="'var(--ev-' + c + '-b)'"
+            [attr.aria-label]="c"
+            (click)="selectColor(c)"
+          ></button>
+        }
+      </div>
+    </div>
+
     <label class="field">
       <span class="field__label">Календарь</span>
       <select
@@ -110,53 +126,125 @@
       </label>
     </div>
 
-    <label class="field">
-      <span class="field__label">Комната в Толке</span>
-      <input
-        name="room"
-        class="field__input"
-        placeholder="pdata-hq — хвост ссылки talk.kontur.ru/c/…"
-        [ngModel]="talkRoomSlug()"
-        (ngModelChange)="talkRoomSlug.set($event)"
-      />
-    </label>
+    <div class="toggles">
+      <label class="toggle-row">
+        <span class="toggle-row__label">Видеовстреча в Толк</span>
+        <input
+          type="checkbox"
+          class="toggle-switch"
+          [ngModel]="tolkVideo()"
+          (ngModelChange)="toggleTolkVideo($event)"
+        />
+      </label>
+      <label class="toggle-row">
+        <span class="toggle-row__label">Запись + ИИ-протокол</span>
+        <input
+          type="checkbox"
+          class="toggle-switch"
+          [ngModel]="recordAndAi()"
+          (ngModelChange)="recordAndAi.set($event)"
+        />
+      </label>
+      <label class="toggle-row">
+        <span class="toggle-row__label">Повторять каждую неделю</span>
+        <input
+          type="checkbox"
+          class="toggle-switch"
+          [ngModel]="repeatWeekly()"
+          (ngModelChange)="toggleRepeatWeekly($event)"
+        />
+      </label>
+    </div>
+
+    @if (tolkVideo()) {
+      <label class="field">
+        <span class="field__label">Комната в Толке</span>
+        <input
+          name="room"
+          class="field__input"
+          placeholder="pdata-hq — хвост ссылки talk.kontur.ru/c/…"
+          [ngModel]="talkRoomSlug()"
+          (ngModelChange)="talkRoomSlug.set($event)"
+        />
+      </label>
+    }
 
     <div class="field">
-      <span class="field__label">Участники</span>
+      <span class="field__label">Добавить участников списком</span>
 
       @if (participantLists().length > 0) {
-        <div class="lists">
+        <div class="chips">
           @for (list of participantLists(); track list.id) {
-            <button type="button" class="lists__button" (click)="addList(list)">
-              + {{ list.name }}
+            <button
+              type="button"
+              class="chip-toggle"
+              [class.chip-toggle--active]="isListFullyAdded(list)"
+              (click)="toggleList(list)"
+            >
+              <span class="ci" [style.background]="'var(--ev-' + (list.color || 'blue') + '-b)'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                </svg>
+              </span>
+              {{ list.name }}
+              <span class="cn">{{ list.members.length }}</span>
             </button>
           }
         </div>
       }
 
-      <ul class="people">
-        @for (person of people(); track person.id) {
-          <li>
-            <label class="people__row">
-              <input
-                type="checkbox"
-                [checked]="isChosen(person.id)"
-                (change)="toggleParticipant(person.id)"
-              />
+      @if (chosenPeople().length > 0) {
+        <div class="added-people">
+          @for (person of chosenPeople(); track person.id) {
+            <div class="person-tag">
               <span
-                class="people__avatar"
+                class="pa"
                 [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'"
                 aria-hidden="true"
               >
-                {{ person.displayName.charAt(0) }}
+                {{ initials(person.displayName) }}
               </span>
-              {{ person.displayName }}
-            </label>
-          </li>
-        } @empty {
-          <li class="people__empty">Кроме вас пока никого нет</li>
-        }
-      </ul>
+              <span class="person-tag__name">{{ person.displayName }}</span>
+              <button
+                type="button"
+                class="rm"
+                aria-label="Удалить участника"
+                (click)="toggleParticipant(person.id)"
+              >
+                ✕
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <details class="people-details">
+        <summary class="people-details__summary">Все сотрудники ({{ people().length }})</summary>
+        <ul class="people">
+          @for (person of people(); track person.id) {
+            <li>
+              <label class="people__row">
+                <input
+                  type="checkbox"
+                  [checked]="isChosen(person.id)"
+                  (change)="toggleParticipant(person.id)"
+                />
+                <span
+                  class="people__avatar"
+                  [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'"
+                  aria-hidden="true"
+                >
+                  {{ person.displayName.charAt(0) }}
+                </span>
+                {{ person.displayName }}
+              </label>
+            </li>
+          } @empty {
+            <li class="people__empty">Кроме вас пока никого нет</li>
+          }
+        </ul>
+      </details>
     </div>
 
     <label class="field">

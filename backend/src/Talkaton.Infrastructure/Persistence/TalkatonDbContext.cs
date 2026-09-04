@@ -152,6 +152,7 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
             list.ToTable("participant_lists");
             list.HasKey(x => x.Id);
             list.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            list.Property(x => x.Color).HasMaxLength(32).HasDefaultValue("blue");
 
             list.HasOne(x => x.Owner)
                 .WithMany()

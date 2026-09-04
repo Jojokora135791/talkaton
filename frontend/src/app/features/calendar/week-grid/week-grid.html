@@ -15,14 +15,37 @@
       @for (column of columns(); track column.key) {
         <div class="grid__allday-cell">
           @for (item of column.allDay; track item.eventId + item.occurrenceStartUtc) {
-            <button
-              type="button"
-              class="chip"
-              [style.--tk-event-color]="item.calendarColor"
-              (click)="onAllDaySelected(item)"
-            >
-              {{ item.title }}
-            </button>
+            @if (isBirthday(item)) {
+              <button
+                type="button"
+                class="bday"
+                (click)="onAllDaySelected(item)"
+                [title]="item.title"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M12 4a1 1 0 0 0-1 1c0 1 1 2 1 2s1-1 1-2a1 1 0 0 0-1-1z" />
+                </svg>
+                <span>{{ birthdayName(item.title) }}</span>
+              </button>
+            } @else if (isVacation(item)) {
+              <button
+                type="button"
+                class="ad-pill"
+                (click)="onAllDaySelected(item)"
+                [title]="item.title"
+              >
+                <span>{{ item.title }}</span>
+              </button>
+            } @else {
+              <button
+                type="button"
+                class="chip"
+                [style.--tk-event-color]="item.calendarColor"
+                (click)="onAllDaySelected(item)"
+              >
+                {{ item.title }}
+              </button>
+            }
           }
         </div>
       }
@@ -65,6 +88,9 @@
                 (pointermove)="onPointerMove($event)"
                 (pointerup)="onPointerUp($event)"
               >
+                @if (item.dragging && preview(); as prev) {
+                  <span class="event__drop-time">{{ formatTime(prev.start) }} – {{ formatTime(prev.end) }}</span>
+                }
                 <span class="event__title">{{ item.occurrence.title }}</span>
                 <span class="event__time">{{ item.timeLabel }}</span>
 

@@ -44,6 +44,8 @@ export interface DateRange {
  * Состояние раздела «Календарь»: что показываем, за какой период и что выбрано.
  * Живёт на уровне страницы, а не приложения — уход в другой раздел должен обнулять выбор.
  */
+export type BirthdayScope = 'all' | 'dept' | 'fav';
+
 @Injectable()
 export class CalendarStore {
   private readonly api = inject(TalkatonApi);
@@ -59,6 +61,9 @@ export class CalendarStore {
   private readonly searchState = signal('');
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
+  private readonly birthdayScopeState = signal<BirthdayScope>('dept');
+  private readonly toastMessageState = signal<string | null>(null);
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly view = this.viewState.asReadonly();
 
@@ -71,6 +76,8 @@ export class CalendarStore {
   readonly search = this.searchState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
+  readonly birthdayScope = this.birthdayScopeState.asReadonly();
+  readonly toastMessage = this.toastMessageState.asReadonly();
 
   readonly range = computed<DateRange>(() => rangeFor(this.viewState(), this.anchorState()));
 
@@ -104,18 +111,33 @@ export class CalendarStore {
   });
 
   /**
-   * Что реально рисуется: галочки видимости и поиск фильтруют уже загруженное.
+   * Что реально рисуется: галочки видимости, скоуп дней рождения и поиск фильтруют уже загруженное.
    * Клиентом, а не запросом — чтобы галочка отзывалась мгновенно и сетка не мигала.
    */
   readonly visibleOccurrences = computed(() => {
     const hidden = new Set(this.calendarsState().filter((x) => !x.isVisible).map((x) => x.id));
     const needle = this.searchState().trim().toLowerCase();
+    const bdayCalendar = this.calendarsState().find((x) => x.name.toLowerCase().includes('рождения'));
+    const bdayScope = this.birthdayScopeState();
 
-    return this.occurrencesState().filter(
-      (occurrence) =>
-        !hidden.has(occurrence.calendarId) &&
-        (needle.length === 0 || occurrence.title.toLowerCase().includes(needle)),
-    );
+    return this.occurrencesState().filter((occurrence) => {
+      if (hidden.has(occurrence.calendarId)) {
+        return false;
+      }
+
+      if (bdayCalendar && occurrence.calendarId === bdayCalendar.id) {
+        const slug = occurrence.talkRoomSlug ?? '';
+        const itemScope: BirthdayScope = slug === 'bday:fav' ? 'fav' : slug === 'bday:all' ? 'all' : 'dept';
+        if (bdayScope === 'fav' && itemScope !== 'fav') {
+          return false;
+        }
+        if (bdayScope === 'dept' && itemScope === 'all') {
+          return false;
+        }
+      }
+
+      return needle.length === 0 || occurrence.title.toLowerCase().includes(needle);
+    });
   });
 
   load(): void {
@@ -170,6 +192,28 @@ export class CalendarStore {
 
   setSearch(text: string): void {
     this.searchState.set(text);
+  }
+
+  showToast(message: string): void {
+    this.toastMessageState.set(message);
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      if (this.toastMessageState() === message) {
+        this.toastMessageState.set(null);
+      }
+    }, 2500);
+  }
+
+  setBirthdayScope(scope: BirthdayScope): void {
+    this.birthdayScopeState.set(scope);
+    const bdayCalendar = this.calendarsState().find((x) => x.name.toLowerCase().includes('рождения'));
+    if (bdayCalendar && !bdayCalendar.isVisible) {
+      this.toggleCalendar(bdayCalendar);
+    }
+    const label = scope === 'all' ? 'всех сотрудников' : scope === 'dept' ? 'моё подразделение' : 'только избранных';
+    this.showToast(`Дни рождения: ${label}`);
   }
 
   today(): void {

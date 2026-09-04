@@ -58,7 +58,8 @@ public record CreateEventRequest(
     string? RecurrenceRule,
     string? TalkRoomSlug,
     Guid[]? ParticipantIds,
-    int? ReminderMinutesBefore);
+    int? ReminderMinutesBefore,
+    bool? GenerateArtifacts = false);
 
 /// <summary>
 /// Все поля необязательные: drag&amp;drop шлёт только время, редактор — только изменённое.
