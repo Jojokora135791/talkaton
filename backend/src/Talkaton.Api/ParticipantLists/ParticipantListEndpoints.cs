@@ -11,6 +11,9 @@ public record CreateParticipantListRequest(string Name, Guid[]? MemberIds);
 
 public static class ParticipantListEndpoints
 {
+    private const int MaxNameLength = 200;
+    private const int MaxMembers = 100;
+
     public static IEndpointRouteBuilder MapParticipantListEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/participant-lists")
@@ -39,12 +42,22 @@ public static class ParticipantListEndpoints
                 CancellationToken ct) =>
             {
                 var name = request.Name?.Trim() ?? string.Empty;
-                if (name.Length == 0)
+                if (name.Length == 0 || name.Length > MaxNameLength)
                 {
-                    return Results.Problem(title: "Пустое название списка", statusCode: StatusCodes.Status400BadRequest);
+                    return Results.Problem(
+                        title: $"Название списка должно содержать от 1 до {MaxNameLength} символов",
+                        statusCode: StatusCodes.Status400BadRequest);
                 }
 
                 var owner = currentUser.Required;
+                var memberIds = (request.MemberIds ?? []).Distinct().ToArray();
+                if (memberIds.Length > MaxMembers)
+                {
+                    return Results.Problem(
+                        title: $"В списке может быть не больше {MaxMembers} участников",
+                        statusCode: StatusCodes.Status400BadRequest);
+                }
+
                 var lastOrder = await db.ParticipantLists
                     .Where(x => x.OwnerId == owner.Id)
                     .MaxAsync(x => (int?)x.SortOrder, ct) ?? -1;
@@ -57,12 +70,15 @@ public static class ParticipantListEndpoints
                     SortOrder = lastOrder + 1,
                 };
 
-                foreach (var memberId in (request.MemberIds ?? []).Distinct())
+                // Один параметризованный запрос не даёт подложить несуществующий ID и не создаёт N+1.
+                var validMemberIds = await db.Users
+                    .Where(x => x.Id != owner.Id && memberIds.Contains(x.Id))
+                    .Select(x => x.Id)
+                    .ToListAsync(ct);
+
+                foreach (var memberId in validMemberIds)
                 {
-                    if (await db.Users.AnyAsync(x => x.Id == memberId, ct))
-                    {
-                        list.Members.Add(new ParticipantListMember { ListId = list.Id, UserId = memberId });
-                    }
+                    list.Members.Add(new ParticipantListMember { ListId = list.Id, UserId = memberId });
                 }
 
                 db.ParticipantLists.Add(list);

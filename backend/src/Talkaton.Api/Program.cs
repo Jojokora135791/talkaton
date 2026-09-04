@@ -35,6 +35,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Корня у API нет, и голый 404 на localhost:5080 читается как «ничего не запустилось».
+    // В разработке отправляем на Swagger — это единственная осмысленная страница бэкенда.
+    app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 }
 
 app.UseCors(CorsPolicy);
