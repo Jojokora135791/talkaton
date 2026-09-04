@@ -3,7 +3,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
+    <!-- Не latest: язык должен зависеть от целевой платформы, а не от того, какой SDK
+         оказался на машине. Под C# 14 `массив.Contains(x)` связывается с
+         MemoryExtensions.Contains по ReadOnlySpan<T>, в дерево выражения попадает
+         ref struct, и интерпретатор EF Core 8 на нём падает. -->
+    <LangVersion>12.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>

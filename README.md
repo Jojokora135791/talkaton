@@ -99,12 +99,18 @@ $user = [Environment]::GetEnvironmentVariable('PATH','User')
 
 ### Если рядом стоит SDK 10
 
-`dotnet test` берёт тестовый хост от того SDK, который первым нашёлся в PATH. Под SDK 10
-хост поднимается на рантайме .NET 10, и EF Core 8 падает на разборе параметров запроса
-(`Contains` по массиву) — тест `ParticipantListApiTests` не проходит, хотя код исправен.
+Версия SDK меняет версию компилятора, а с ней — разрешение перегрузок. Под C# 14
+`массив.Contains(x)` связывается уже не с `Enumerable.Contains`, а с
+`MemoryExtensions.Contains` по `ReadOnlySpan<T>`; в дерево выражения попадает ref struct,
+и интерпретатор EF Core 8 на нём падает. Тест `ParticipantListApiTests` не проходит,
+хотя код исправен.
 
-Поэтому задачи VS Code ставят `%USERPROFILE%\.dotnet` **перед** системным путём.
-Из терминала запускайте тесты так же:
+Поэтому SDK зафиксирован в `global.json` (8.x), а язык — в `Directory.Build.props`
+(`LangVersion` 12.0, не `latest`). Сборка любым SDK 10 теперь не молча компилируется
+иначе, а честно останавливается с «A compatible .NET SDK was not found».
+
+Найти SDK 8 всё равно должен тот `dotnet`, что стоит в PATH, — поэтому задачи VS Code
+ставят `%USERPROFILE%\.dotnet` **перед** системным путём. Из терминала так же:
 
 ```powershell
 $env:PATH = "$env:USERPROFILE\.dotnet;$env:PATH"

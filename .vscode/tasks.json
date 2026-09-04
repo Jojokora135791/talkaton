@@ -5,9 +5,9 @@
       "label": "бэкенд: собрать",
       "type": "shell",
       "command": "dotnet",
-      // SDK из профиля идёт ПЕРЕД системным намеренно. Если рядом стоит SDK 10,
-      // `dotnet test` поднимает тестовый хост на .NET 10, а EF Core 8 там падает на
-      // разборе параметров запроса (Contains по массиву). Держим весь инструментарий на .NET 8.
+      // SDK из профиля идёт ПЕРЕД системным намеренно: версию SDK фиксирует global.json,
+      // но найти её должен тот dotnet, что стоит в PATH. У системного SDK 10 восьмёрки нет,
+      // и сборка останавливается на «A compatible .NET SDK was not found».
       "options": {
         "env": { "PATH": "${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools;${env:PATH}" }
       },
