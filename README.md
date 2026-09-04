@@ -97,6 +97,22 @@ $user = [Environment]::GetEnvironmentVariable('PATH','User')
 
 Пока SDK нет, тестировать можно конфигурацией **Браузер к стенду в Docker**.
 
+### Если рядом стоит SDK 10
+
+`dotnet test` берёт тестовый хост от того SDK, который первым нашёлся в PATH. Под SDK 10
+хост поднимается на рантайме .NET 10, и EF Core 8 падает на разборе параметров запроса
+(`Contains` по массиву) — тест `ParticipantListApiTests` не проходит, хотя код исправен.
+
+Поэтому задачи VS Code ставят `%USERPROFILE%\.dotnet` **перед** системным путём.
+Из терминала запускайте тесты так же:
+
+```powershell
+$env:PATH = "$env:USERPROFILE\.dotnet;$env:PATH"
+dotnet test backend/Talkaton.sln
+```
+
+Проверить, какой SDK берётся: `(Get-Command dotnet).Source` и `dotnet --list-sdks`.
+
 ## Проверки
 
 ```bash

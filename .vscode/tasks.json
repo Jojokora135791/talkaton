@@ -5,10 +5,11 @@
       "label": "бэкенд: собрать",
       "type": "shell",
       "command": "dotnet",
-      // SDK, поставленный скриптом dotnet-install.ps1, ложится в профиль и в PATH
-      // текущего окна VS Code не попадает — дописываем его сами, чтобы работало без перезапуска.
+      // SDK из профиля идёт ПЕРЕД системным намеренно. Если рядом стоит SDK 10,
+      // `dotnet test` поднимает тестовый хост на .NET 10, а EF Core 8 там падает на
+      // разборе параметров запроса (Contains по массиву). Держим весь инструментарий на .NET 8.
       "options": {
-        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+        "env": { "PATH": "${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools;${env:PATH}" }
       },
       "args": [
         "build",
@@ -77,7 +78,7 @@
       "type": "shell",
       "command": "dotnet",
       "options": {
-        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+        "env": { "PATH": "${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools;${env:PATH}" }
       },
       "args": ["test", "${workspaceFolder}/backend/Talkaton.sln"],
       "group": { "kind": "test", "isDefault": true },
@@ -106,7 +107,7 @@
       "type": "shell",
       "command": "dotnet",
       "options": {
-        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+        "env": { "PATH": "${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools;${env:PATH}" }
       },
       "args": [
         "ef",
