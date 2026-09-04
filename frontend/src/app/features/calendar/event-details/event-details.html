@@ -9,7 +9,9 @@
   </header>
 
   <section class="row">
-    <span class="row__icon" aria-hidden="true">🕐</span>
+    <span class="row__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    </span>
     <div>
       <p class="row__main">{{ heading() }}</p>
       @if (recurrenceText(); as repeat) {
@@ -23,7 +25,9 @@
 
   @if (roomLabel(); as room) {
     <section class="row">
-      <span class="row__icon" aria-hidden="true">📹</span>
+      <span class="row__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </span>
       <div>
         <p class="row__main">Видеовстреча в Толк</p>
         <p class="row__sub">{{ room }}</p>
@@ -31,7 +35,7 @@
     </section>
 
     <button type="button" class="join" (click)="join()">
-      <span aria-hidden="true">📹</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
       Присоединиться
     </button>
   }
@@ -76,8 +80,29 @@
       <ul class="artifacts">
         @for (artifact of details().artifacts; track artifact.id) {
           <li>
-            <button type="button" class="artifact" (click)="openArtifact(artifact.url)">
-              <span class="artifact__icon" aria-hidden="true">{{ iconOf(artifact.kind) }}</span>
+            <button
+              type="button"
+              class="artifact"
+              [disabled]="!artifactAvailable(artifact.url)"
+              [title]="artifactAvailable(artifact.url) ? 'Открыть артефакт' : 'Ссылка появится после синхронизации с Толком'"
+              (click)="openArtifact(artifact.url)"
+            >
+              <span class="artifact__icon" [attr.data-kind]="artifact.kind" aria-hidden="true">
+                @switch (artifact.kind) {
+                  @case ('recording') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                  @case ('protocol') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l4 4v16H6zM14 2v5h5M9 12h7M9 16h7"/></svg>
+                  }
+                  @case ('board') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  }
+                  @case ('tasks') {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l2 2 4-5M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
+                  }
+                }
+              </span>
               <span class="artifact__body">
                 <span class="artifact__title">{{ artifact.title }}</span>
                 @if (artifact.subtitle) {
@@ -102,7 +127,7 @@
             [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'"
             aria-hidden="true"
           >
-            {{ person.displayName.charAt(0) }}
+            {{ initials(person.displayName) }}
           </span>
           <span class="people__name">
             {{ person.displayName }}

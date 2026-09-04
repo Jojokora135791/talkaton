@@ -38,29 +38,23 @@
       type="button"
       class="section-title__add"
       aria-label="Добавить список участников"
-      (click)="startAddingList()"
+      title="Новый список участников"
+      (click)="listCreateRequested.emit()"
     >
       ＋
     </button>
   </div>
 
-  @if (addingList()) {
-    <form class="new-list" (ngSubmit)="submitList()">
-      <input
-        class="new-list__input"
-        name="listName"
-        placeholder="Название списка"
-        [ngModel]="newListName()"
-        (ngModelChange)="newListName.set($event)"
-        (keydown.escape)="cancelList()"
-      />
-    </form>
-  }
-
   <ul class="lists">
     @for (list of participantLists(); track list.id) {
       <li class="lists__row">
-        <span class="lists__icon" aria-hidden="true">👥</span>
+        <span class="lists__icon" [style.--tk-list-color]="'var(--tk-avatar-' + ($index % 6) + ')'" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </span>
         <span class="lists__name">{{ list.name }}</span>
         <span class="lists__count">{{ list.members.length }}</span>
       </li>

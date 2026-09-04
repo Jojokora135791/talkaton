@@ -5,7 +5,7 @@ import { ReminderService } from '../../features/reminders/reminder.service';
 
 interface NavTab {
   readonly label: string;
-  readonly icon: string;
+  readonly icon: 'calendar' | 'chat' | 'folder' | 'board' | 'contacts';
   /** Пока активен только «Календарь» — остальные вкладки живут в самом Толке. */
   readonly active: boolean;
   readonly badge?: number;
@@ -23,11 +23,11 @@ export class AppHeader {
   private readonly router = inject(Router);
 
   protected readonly tabs: readonly NavTab[] = [
-    { label: 'Календарь', icon: '🗓', active: true },
-    { label: 'Чаты', icon: '💬', active: false, badge: 1 },
-    { label: 'Артефакты', icon: '📁', active: false },
-    { label: 'Доски', icon: '🗂', active: false },
-    { label: 'Контакты', icon: '👥', active: false },
+    { label: 'Календарь', icon: 'calendar', active: true },
+    { label: 'Чаты', icon: 'chat', active: false, badge: 1 },
+    { label: 'Артефакты', icon: 'folder', active: false },
+    { label: 'Доски', icon: 'board', active: false },
+    { label: 'Контакты', icon: 'contacts', active: false },
   ];
 
   protected readonly user = this.session.user;

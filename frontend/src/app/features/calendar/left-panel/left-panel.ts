@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MiniMonth } from '../mini-month/mini-month';
 import { Calendar, ParticipantList } from '../../../core/api/models';
 
@@ -12,7 +11,7 @@ import { Calendar, ParticipantList } from '../../../core/api/models';
  */
 @Component({
   selector: 'app-left-panel',
-  imports: [FormsModule, MiniMonth],
+  imports: [MiniMonth],
   templateUrl: './left-panel.html',
   styleUrl: './left-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,26 +25,5 @@ export class LeftPanel {
   readonly createRequested = output<void>();
   readonly daySelected = output<Date>();
   readonly calendarToggled = output<Calendar>();
-  readonly listCreated = output<string>();
-
-  protected readonly newListName = signal('');
-  protected readonly addingList = signal(false);
-
-  protected startAddingList(): void {
-    this.addingList.set(true);
-  }
-
-  protected submitList(): void {
-    const name = this.newListName().trim();
-    if (name.length > 0) {
-      this.listCreated.emit(name);
-    }
-
-    this.cancelList();
-  }
-
-  protected cancelList(): void {
-    this.newListName.set('');
-    this.addingList.set(false);
-  }
+  readonly listCreateRequested = output<void>();
 }

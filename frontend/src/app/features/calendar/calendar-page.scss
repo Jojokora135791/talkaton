@@ -1,9 +1,13 @@
 .layout {
   display: grid;
-  grid-template-columns: var(--tk-left-panel-width) minmax(0, 1fr) var(--tk-right-panel-width);
+  grid-template-columns: var(--tk-left-panel-width) minmax(0, 1fr);
   gap: 1px;
   height: calc(100vh - var(--tk-header-height));
   background: var(--tk-border);
+
+  &--details {
+    grid-template-columns: var(--tk-left-panel-width) minmax(0, 1fr) var(--tk-right-panel-width);
+  }
 
   /* min-height: 0 обязателен всем трём колонкам: по умолчанию грид-элемент
      растягивается под содержимое, и высокая сетка недели выдавливает подвал за экран
@@ -28,19 +32,7 @@
     padding: var(--tk-space-4);
     overflow-y: auto;
     background: var(--tk-surface-panel);
-
-    &--empty {
-      display: grid;
-      place-items: center;
-    }
   }
-}
-
-.empty {
-  margin: 0;
-  color: var(--tk-text-muted);
-  line-height: 1.5;
-  text-align: center;
 }
 
 .status {
@@ -78,5 +70,59 @@
     &:hover {
       color: var(--tk-text-primary);
     }
+  }
+}
+
+.mobile-create {
+  display: none;
+}
+
+@media (max-width: 1080px) {
+  .layout,
+  .layout--details {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .layout__right {
+    position: fixed;
+    top: var(--tk-header-height);
+    right: 0;
+    bottom: 0;
+    z-index: calc(var(--tk-z-dialog) - 1);
+    width: min(var(--tk-right-panel-width), calc(100vw - 40px));
+    border-left: 1px solid var(--tk-border);
+    box-shadow: var(--tk-shadow-overlay);
+  }
+}
+
+@media (max-width: 720px) {
+  .layout,
+  .layout--details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .layout__left {
+    display: none;
+  }
+
+  .status {
+    display: none;
+  }
+
+  .mobile-create {
+    position: fixed;
+    right: var(--tk-space-4);
+    bottom: var(--tk-space-4);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    padding: var(--tk-space-3) var(--tk-space-4);
+    background: var(--tk-accent);
+    border: none;
+    border-radius: 999px;
+    box-shadow: var(--tk-shadow-overlay);
+    color: var(--tk-accent-contrast);
+    font-weight: 600;
   }
 }

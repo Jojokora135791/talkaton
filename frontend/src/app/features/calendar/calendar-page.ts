@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CalendarStore, CalendarView } from './calendar-store';
 import { LeftPanel } from './left-panel/left-panel';
@@ -8,6 +16,10 @@ import { MonthGrid } from './month-grid/month-grid';
 import { YearView } from './year-view/year-view';
 import { EventDetailsPanel } from './event-details/event-details';
 import { EventDraft, EventEditor, EventEditorSeed } from './event-editor/event-editor';
+import {
+  ParticipantListDraft,
+  ParticipantListEditor,
+} from './participant-list-editor/participant-list-editor';
 import { TalkatonApi } from '../../core/api/talkaton-api';
 import { ReminderService } from '../reminders/reminder.service';
 import { Calendar, EditScope, Health, Occurrence, ParticipantStatus, User } from '../../core/api/models';
@@ -33,6 +45,7 @@ const DEFAULT_START_HOUR = 10;
     YearView,
     EventDetailsPanel,
     EventEditor,
+    ParticipantListEditor,
   ],
   providers: [CalendarStore],
   templateUrl: './calendar-page.html',
@@ -49,6 +62,9 @@ export class CalendarPage {
   protected readonly people = signal<User[]>([]);
   protected readonly health = signal<Health | null>(null);
   protected readonly editorSeed = signal<EventEditorSeed | null>(null);
+  protected readonly listEditorOpen = signal(false);
+  protected readonly listSaving = signal(false);
+  protected readonly listError = signal<string | null>(null);
 
   /** Дни для сетки: один для вида «День», семь для недели, сорок два для месяца. */
   protected readonly days = computed(() => {
@@ -106,11 +122,39 @@ export class CalendarPage {
     this.store.toggleCalendar(calendar);
   }
 
-  protected onListCreated(name: string): void {
+  protected openListEditor(): void {
+    this.listError.set(null);
+    this.listEditorOpen.set(true);
+  }
+
+  protected closeListEditor(): void {
+    if (!this.listSaving()) {
+      this.listEditorOpen.set(false);
+      this.listError.set(null);
+    }
+  }
+
+  protected onListCreated(draft: ParticipantListDraft): void {
+    if (this.listSaving()) {
+      return;
+    }
+
+    this.listSaving.set(true);
+    this.listError.set(null);
     this.api
-      .createParticipantList(name, [])
+      .createParticipantList(draft.name, draft.memberIds)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({ next: () => this.store.load() });
+      .subscribe({
+        next: () => {
+          this.listSaving.set(false);
+          this.listEditorOpen.set(false);
+          this.store.load();
+        },
+        error: () => {
+          this.listSaving.set(false);
+          this.listError.set('Не удалось создать список. Проверьте соединение и попробуйте ещё раз.');
+        },
+      });
   }
 
   protected onOccurrenceSelected(occurrence: Occurrence): void {
@@ -234,6 +278,56 @@ export class CalendarPage {
     }
 
     this.reminders.reload();
+  }
+
+  /** Быстрые клавиши из прототипа работают, только когда фокус не находится в контроле. */
+  @HostListener('document:keydown', ['$event'])
+  protected onShortcut(event: KeyboardEvent): void {
+    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (target?.closest('input, textarea, select, button, [contenteditable="true"]')) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      if (this.editorSeed()) {
+        this.editorSeed.set(null);
+      } else if (this.listEditorOpen()) {
+        this.closeListEditor();
+      } else if (this.store.details()) {
+        this.store.select(null);
+      }
+      return;
+    }
+
+    if (this.editorSeed() || this.listEditorOpen()) {
+      return;
+    }
+
+    const key = event.key.toLocaleLowerCase('ru');
+    const views: Partial<Record<string, CalendarView>> = {
+      d: 'day',
+      w: 'week',
+      m: 'month',
+      y: 'year',
+    };
+    const view = views[key];
+    if (view) {
+      this.store.setView(view);
+      return;
+    }
+
+    if (key === 't') {
+      this.store.today();
+    } else if (key === 'c') {
+      this.openCreateEditor();
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.store.step(event.key === 'ArrowLeft' ? -1 : 1);
+    }
   }
 
   private defaultSlot(): Date {

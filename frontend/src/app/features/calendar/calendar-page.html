@@ -1,4 +1,4 @@
-<div class="layout">
+<div class="layout" [class.layout--details]="store.details()">
   <aside class="layout__left">
     <app-left-panel
       [calendars]="store.calendars()"
@@ -8,7 +8,7 @@
       (createRequested)="openCreateEditor()"
       (daySelected)="onDayPicked($event)"
       (calendarToggled)="onCalendarToggled($event)"
-      (listCreated)="onListCreated($event)"
+      (listCreateRequested)="openListEditor()"
     />
   </aside>
 
@@ -66,10 +66,15 @@
         Проверяем связь с API…
       }
     </footer>
+
+    <button type="button" class="mobile-create" title="Создать встречу · C" (click)="openCreateEditor()">
+      <span aria-hidden="true">＋</span>
+      Встреча
+    </button>
   </main>
 
-  <aside class="layout__right" [class.layout__right--empty]="!store.details()">
-    @if (store.details(); as details) {
+  @if (store.details(); as details) {
+    <aside class="layout__right">
       <app-event-details
         [details]="details"
         (closed)="store.select(null)"
@@ -78,12 +83,8 @@
         (rsvpChanged)="onRsvp($event)"
         (reminderChanged)="onReminderChanged($event)"
       />
-    } @else {
-      <p class="empty">
-        Выберите встречу в сетке — здесь появятся её артефакты, участники и ссылка в Толк.
-      </p>
-    }
-  </aside>
+    </aside>
+  }
 </div>
 
 @if (editorSeed(); as seed) {
@@ -94,5 +95,15 @@
     [participantLists]="store.participantLists()"
     (saved)="onEditorSaved($event)"
     (cancelled)="editorSeed.set(null)"
+  />
+}
+
+@if (listEditorOpen()) {
+  <app-participant-list-editor
+    [people]="people()"
+    [saving]="listSaving()"
+    [serverError]="listError()"
+    (saved)="onListCreated($event)"
+    (cancelled)="closeListEditor()"
   />
 }

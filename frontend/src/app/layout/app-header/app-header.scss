@@ -41,6 +41,12 @@
     }
   }
 
+  &__icon {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+  }
+
   &__user {
     display: flex;
     align-items: center;
@@ -104,5 +110,49 @@
     font-size: 11px;
     line-height: 16px;
     text-align: center;
+  }
+
+  &__icon svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .header__action-label,
+  .header__user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .header {
+    gap: var(--tk-space-2);
+    padding-inline: var(--tk-space-2);
+
+    &__brand {
+      font-size: 13px;
+    }
+
+    &__tabs {
+      min-width: 0;
+      overflow: hidden;
+    }
+  }
+
+  .tab {
+    padding-inline: var(--tk-space-2);
+
+    &__label,
+    &__badge {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 520px) {
+  .tab:not(.tab--active) {
+    display: none;
   }
 }

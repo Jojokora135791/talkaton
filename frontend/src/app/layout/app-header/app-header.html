@@ -3,9 +3,33 @@
 
   <nav class="header__tabs">
     @for (tab of tabs; track tab.label) {
-      <button type="button" class="tab" [class.tab--active]="tab.active" [disabled]="!tab.active">
-        <span class="tab__icon" aria-hidden="true">{{ tab.icon }}</span>
-        <span>{{ tab.label }}</span>
+      <button
+        type="button"
+        class="tab"
+        [class.tab--active]="tab.active"
+        [disabled]="!tab.active"
+        [title]="tab.active ? tab.label : tab.label + ' — раздел доступен в Контур Толке'"
+      >
+        <span class="tab__icon" aria-hidden="true">
+          @switch (tab.icon) {
+            @case ('calendar') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            }
+            @case ('chat') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            }
+            @case ('folder') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            }
+            @case ('board') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            }
+            @case ('contacts') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            }
+          }
+        </span>
+        <span class="tab__label">{{ tab.label }}</span>
         @if (tab.badge) {
           <span class="tab__badge">{{ tab.badge }}</span>
         }
@@ -21,14 +45,14 @@
         title="Разрешить браузеру показывать напоминания о встречах"
         (click)="enableNotifications()"
       >
-        <span aria-hidden="true">🔔</span>
-        Включить напоминания
+        <svg class="header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="header__action-label">Включить напоминания</span>
       </button>
     }
 
     <button type="button" class="header__ghost">
-      <span aria-hidden="true">📹</span>
-      Созвониться сейчас
+      <svg class="header__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m23 7-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <span class="header__action-label">Созвониться сейчас</span>
     </button>
 
     @if (user(); as person) {
@@ -41,7 +65,7 @@
         <span class="header__avatar" [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'">
           {{ initials() }}
         </span>
-        {{ person.displayName }}
+        <span class="header__user-name">{{ person.displayName }}</span>
       </button>
     }
   </div>

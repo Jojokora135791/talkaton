@@ -1,17 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ArtifactKind, EditScope, EventDetails, ParticipantStatus } from '../../../core/api/models';
+import { EditScope, EventDetails, ParticipantStatus } from '../../../core/api/models';
 import { joinTalkRoom, talkRoomLabel } from '../../../core/talk/talk-room';
 import { formatOccurrenceHeading } from '../../../core/time/date-utils';
 import { describeRecurrence } from '../../../core/time/recurrence-text';
-
-/** Только эмодзи, которые везде рисуются цветными: символьные глифы местами дают квадраты. */
-const ARTIFACT_ICONS: Record<ArtifactKind, string> = {
-  recording: '🎬',
-  protocol: '📄',
-  board: '🗂',
-  tasks: '✅',
-};
 
 const STATUS_LABELS: Record<ParticipantStatus, string> = {
   accepted: '✓ идёт',
@@ -61,10 +53,6 @@ export class EventDetailsPanel {
 
   protected readonly rsvpOptions: readonly ParticipantStatus[] = ['accepted', 'tentative', 'declined'];
 
-  protected iconOf(kind: ArtifactKind): string {
-    return ARTIFACT_ICONS[kind];
-  }
-
   protected reminderLabel(minutes: number): string {
     return minutes === 0 ? 'Не напоминать' : `За ${minutes} мин`;
   }
@@ -74,12 +62,40 @@ export class EventDetailsPanel {
   }
 
   protected openArtifact(url: string | null): void {
-    if (url) {
-      window.open(url, '_blank', 'noopener');
+    const safeUrl = this.artifactUrl(url);
+    if (safeUrl) {
+      window.open(safeUrl, '_blank', 'noopener,noreferrer');
     }
+  }
+
+  protected artifactAvailable(url: string | null): boolean {
+    return this.artifactUrl(url) !== null;
+  }
+
+  protected initials(name: string): string {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
   protected onReminderChange(value: string): void {
     this.reminderChanged.emit(Number(value));
+  }
+
+  /** Артефакт приходит из API: открываем только обычные web-ссылки, не javascript:/data:. */
+  private artifactUrl(value: string | null): string | null {
+    if (!value) {
+      return null;
+    }
+
+    try {
+      const url = new URL(value, window.location.origin);
+      return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
+    } catch {
+      return null;
+    }
   }
 }

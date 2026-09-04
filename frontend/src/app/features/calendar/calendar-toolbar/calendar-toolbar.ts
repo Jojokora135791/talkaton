@@ -5,6 +5,7 @@ import { CalendarView } from '../calendar-store';
 interface ViewOption {
   readonly value: CalendarView;
   readonly label: string;
+  readonly shortcut: string;
 }
 
 /** Верхняя панель сетки: «Сегодня», стрелки, период, поиск и переключатель вида. */
@@ -27,9 +28,9 @@ export class CalendarToolbar {
   readonly searchChanged = output<string>();
 
   protected readonly views: readonly ViewOption[] = [
-    { value: 'day', label: 'День' },
-    { value: 'week', label: 'Неделя' },
-    { value: 'month', label: 'Месяц' },
-    { value: 'year', label: 'Год' },
+    { value: 'day', label: 'День', shortcut: 'D' },
+    { value: 'week', label: 'Неделя', shortcut: 'W' },
+    { value: 'month', label: 'Месяц', shortcut: 'M' },
+    { value: 'year', label: 'Год', shortcut: 'Y' },
   ];
 }

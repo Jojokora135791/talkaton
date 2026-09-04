@@ -1,9 +1,9 @@
 <div class="toolbar">
-  <button type="button" class="toolbar__today" (click)="todayRequested.emit()">Сегодня</button>
+  <button type="button" class="toolbar__today" title="Сегодня · T" (click)="todayRequested.emit()">Сегодня</button>
 
   <div class="toolbar__nav">
-    <button type="button" aria-label="Назад" (click)="stepped.emit(-1)">‹</button>
-    <button type="button" aria-label="Вперёд" (click)="stepped.emit(1)">›</button>
+    <button type="button" aria-label="Назад" title="Назад · ←" (click)="stepped.emit(-1)">‹</button>
+    <button type="button" aria-label="Вперёд" title="Вперёд · →" (click)="stepped.emit(1)">›</button>
   </div>
 
   <h1 class="toolbar__title">
@@ -31,6 +31,7 @@
         class="toolbar__view"
         [class.toolbar__view--active]="option.value === view()"
         [attr.aria-pressed]="option.value === view()"
+        [title]="option.label + ' · ' + option.shortcut"
         (click)="viewChanged.emit(option.value)"
       >
         {{ option.label }}

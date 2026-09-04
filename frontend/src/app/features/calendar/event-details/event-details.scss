@@ -72,6 +72,7 @@
   &:hover {
     background: var(--tk-accent-hover);
   }
+
 }
 
 .description {
@@ -165,6 +166,14 @@
     background: var(--tk-surface-hover);
   }
 
+  &:disabled {
+    cursor: not-allowed;
+
+    &:hover {
+      background: var(--tk-surface-raised);
+    }
+  }
+
   &__icon {
     display: grid;
     place-items: center;
@@ -172,6 +181,7 @@
     height: 28px;
     border-radius: var(--tk-radius-md);
     background: var(--tk-accent-soft);
+
   }
 
   &__body {

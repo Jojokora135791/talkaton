@@ -111,6 +111,31 @@
   }
 }
 
+@media (max-width: 900px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: var(--tk-space-2);
+
+    &__title {
+      flex: 1;
+    }
+
+    &__search {
+      order: 2;
+      width: 100%;
+      margin-left: 0;
+
+      input {
+        width: 100%;
+      }
+    }
+
+    &__view {
+      padding-inline: var(--tk-space-2);
+    }
+  }
+}
+
 @keyframes toolbar-spin {
   to {
     transform: rotate(360deg);
