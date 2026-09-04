@@ -17,21 +17,56 @@
     gap: var(--tk-space-1);
   }
 
-  &__call {
+  &__right {
     display: flex;
     align-items: center;
     gap: var(--tk-space-2);
     margin-left: auto;
+  }
+
+  &__ghost {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
     padding: var(--tk-space-2) var(--tk-space-3);
     background: transparent;
     border: none;
     border-radius: var(--tk-radius-md);
     color: var(--tk-text-primary);
     font-size: var(--tk-font-size-md);
+    white-space: nowrap;
 
     &:hover {
       background: var(--tk-surface-hover);
     }
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    padding: var(--tk-space-1) var(--tk-space-2) var(--tk-space-1) var(--tk-space-1);
+    background: transparent;
+    border: 1px solid var(--tk-border);
+    border-radius: 999px;
+    color: var(--tk-text-secondary);
+    font-size: var(--tk-font-size-md);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--tk-accent-contrast);
+    font-size: 11px;
+    font-weight: 700;
   }
 }
 

@@ -19,4 +19,6 @@ public class Calendar
 
     /// <summary>Порядок в списке «Мои календари».</summary>
     public int SortOrder { get; set; }
+
+    public ICollection<Event> Events { get; set; } = new List<Event>();
 }

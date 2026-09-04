@@ -1,0 +1,74 @@
+/* Хост тоже участник flex-колонки страницы: без этого сетка вылезает за экран,
+   вместо того чтобы прокручиваться внутри себя, и утягивает подвал вниз. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.year {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--tk-space-4);
+  padding: var(--tk-space-4);
+  overflow-y: auto;
+
+  &__month {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    margin: 0 0 var(--tk-space-2);
+    font-size: var(--tk-font-size-md);
+    font-weight: 600;
+  }
+
+  &__weekdays,
+  &__week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  &__weekdays {
+    margin-bottom: 2px;
+    color: var(--tk-text-muted);
+    font-size: 10px;
+    text-align: center;
+  }
+
+  &__day {
+    aspect-ratio: 1;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--tk-radius-sm);
+    color: var(--tk-text-secondary);
+    font-size: 10px;
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+
+    /* Занятый день — заливка, а не точка: в таком масштабе точку не разглядеть. */
+    &--busy {
+      background: var(--tk-accent-soft);
+      color: var(--tk-text-primary);
+    }
+
+    &--today {
+      outline: 1px solid var(--tk-accent);
+      color: var(--tk-accent);
+      font-weight: 700;
+    }
+
+    &--empty {
+      cursor: default;
+    }
+  }
+}

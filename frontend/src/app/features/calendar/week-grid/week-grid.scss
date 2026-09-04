@@ -1,0 +1,237 @@
+/* Хост тоже участник flex-колонки страницы: без этого сетка вылезает за экран,
+   вместо того чтобы прокручиваться внутри себя, и утягивает подвал вниз. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.grid {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+
+  &__row {
+    display: grid;
+    grid-template-columns: var(--tk-time-gutter-width) repeat(var(--tk-day-count), minmax(0, 1fr));
+    border-bottom: 1px solid var(--tk-border);
+  }
+
+  &__gutter {
+    border-right: 1px solid var(--tk-border);
+
+    &--label {
+      display: grid;
+      place-items: center;
+      color: var(--tk-text-muted);
+      font-size: 11px;
+      line-height: 1.1;
+      text-align: center;
+    }
+  }
+
+  &__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--tk-space-2) 0;
+    border-left: 1px solid var(--tk-border);
+  }
+
+  &__weekday {
+    color: var(--tk-text-muted);
+    font-size: 11px;
+  }
+
+  &__number {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  &__day--today &__number {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--tk-accent);
+    color: var(--tk-accent-contrast);
+  }
+
+  &__allday-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 26px;
+    padding: 2px;
+    border-left: 1px solid var(--tk-border);
+  }
+
+  &__scroller {
+    flex: 1;
+    /* Отступ ради метки 00:00: она поднята над своей строкой и иначе срезается. */
+    padding-top: var(--tk-space-2);
+    overflow-y: auto;
+  }
+
+  &__canvas {
+    display: grid;
+    grid-template-columns: var(--tk-time-gutter-width) minmax(0, 1fr);
+  }
+
+  &__hours {
+    border-right: 1px solid var(--tk-border);
+  }
+
+  &__hour {
+    position: relative;
+    height: var(--tk-hour-height);
+
+    span {
+      position: absolute;
+      top: -7px;
+      right: var(--tk-space-2);
+      color: var(--tk-text-muted);
+      font-size: 11px;
+    }
+  }
+
+  &__columns {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--tk-day-count), minmax(0, 1fr));
+  }
+
+  &__column {
+    position: relative;
+    border-left: 1px solid var(--tk-border);
+  }
+
+  &__column--today {
+    background: rgb(61 125 250 / 4%);
+  }
+
+  &__slot {
+    height: var(--tk-hour-height);
+    border-top: 1px solid var(--tk-grid-line);
+  }
+}
+
+.event {
+  position: absolute;
+  z-index: var(--tk-z-event);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 3px 5px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--tk-event-color) 26%, var(--tk-surface-base));
+  border: 1px solid var(--tk-event-color);
+  border-left: 3px solid var(--tk-event-color);
+  border-radius: var(--tk-radius-sm);
+  color: var(--tk-text-primary);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &--selected {
+    outline: 2px solid var(--tk-accent-contrast);
+    outline-offset: -1px;
+  }
+
+  &--dragging {
+    z-index: calc(var(--tk-z-event) + 1);
+    cursor: grabbing;
+    opacity: 0.85;
+  }
+
+  /* «Возможно» — пунктирная рамка, ровно как на макете. */
+  &--tentative {
+    background: transparent;
+    border-style: dashed;
+  }
+
+  &--declined {
+    opacity: 0.55;
+  }
+
+  &--declined &__title {
+    text-decoration: line-through;
+  }
+
+  /* На получасовой встрече места хватает только на одну строку — и это тема,
+     а не время: во flex-колонке заголовок не сжимается, а время уступает. */
+  &__title {
+    flex: 0 0 auto;
+    overflow: hidden;
+    font-size: var(--tk-font-size-sm);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__time {
+    flex: 0 1 auto;
+    overflow: hidden;
+    color: var(--tk-text-secondary);
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  &__badges {
+    position: absolute;
+    right: 3px;
+    bottom: 2px;
+    display: flex;
+    gap: 3px;
+    color: var(--tk-text-secondary);
+    font-size: 10px;
+  }
+
+  &__resize {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+}
+
+.chip {
+  padding: 2px var(--tk-space-2);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--tk-event-color) 30%, var(--tk-surface-base));
+  border: none;
+  border-left: 3px solid var(--tk-event-color);
+  border-radius: var(--tk-radius-sm);
+  color: var(--tk-text-primary);
+  font-size: 11px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: var(--tk-z-now-line);
+  border-top: 2px solid var(--tk-now-line);
+  pointer-events: none;
+
+  &__label {
+    position: absolute;
+    top: -9px;
+    left: 0;
+    padding: 0 4px;
+    background: var(--tk-now-line);
+    border-radius: 3px;
+    color: var(--tk-accent-contrast);
+    font-size: 10px;
+    font-weight: 600;
+  }
+}

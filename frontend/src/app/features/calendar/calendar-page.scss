@@ -1,141 +1,54 @@
 .layout {
   display: grid;
-  grid-template-columns: var(--tk-left-panel-width) 1fr var(--tk-right-panel-width);
+  grid-template-columns: var(--tk-left-panel-width) minmax(0, 1fr) var(--tk-right-panel-width);
   gap: 1px;
   height: calc(100vh - var(--tk-header-height));
   background: var(--tk-border);
 
+  /* min-height: 0 обязателен всем трём колонкам: по умолчанию грид-элемент
+     растягивается под содержимое, и высокая сетка недели выдавливает подвал за экран
+     вместо того, чтобы прокручиваться внутри себя. */
+  &__left {
+    min-height: 0;
+    padding: var(--tk-space-4);
+    overflow-y: auto;
+    background: var(--tk-surface-panel);
+  }
+
   &__center {
     display: flex;
     flex-direction: column;
-  }
-}
-
-.panel {
-  padding: var(--tk-space-4);
-  background: var(--tk-surface-base);
-  overflow: auto;
-}
-
-.layout__left {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tk-space-5);
-  background: var(--tk-surface-panel);
-}
-
-.layout__right {
-  background: var(--tk-surface-panel);
-}
-
-.create-button {
-  padding: var(--tk-space-3);
-  border: none;
-  border-radius: var(--tk-radius-md);
-  background: var(--tk-accent);
-  color: var(--tk-accent-contrast);
-  font-size: var(--tk-font-size-md);
-  font-weight: 600;
-
-  &:hover {
-    background: var(--tk-accent-hover);
-  }
-}
-
-.section-title {
-  margin: 0 0 var(--tk-space-3);
-  color: var(--tk-text-secondary);
-  font-size: var(--tk-font-size-sm);
-  font-weight: 600;
-  text-transform: none;
-}
-
-.calendars {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tk-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: var(--tk-space-2);
+    min-width: 0;
+    min-height: 0;
+    background: var(--tk-surface-base);
   }
 
-  &__swatch {
-    width: 14px;
-    height: 14px;
-    border: 1px solid;
-    border-radius: var(--tk-radius-sm);
-  }
+  &__right {
+    min-height: 0;
+    padding: var(--tk-space-4);
+    overflow-y: auto;
+    background: var(--tk-surface-panel);
 
-  &__name--off {
-    color: var(--tk-text-muted);
-  }
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--tk-space-4);
-  padding-bottom: var(--tk-space-4);
-  border-bottom: 1px solid var(--tk-border);
-
-  &__today {
-    padding: var(--tk-space-2) var(--tk-space-3);
-    border: 1px solid var(--tk-border-strong);
-    border-radius: var(--tk-radius-md);
-    background: var(--tk-surface-raised);
-    color: var(--tk-text-primary);
-  }
-
-  &__range {
-    font-size: var(--tk-font-size-lg);
-    font-weight: 600;
-  }
-
-  &__views {
-    display: flex;
-    gap: var(--tk-space-3);
-    margin-left: auto;
-    color: var(--tk-text-secondary);
-
-    &--active {
-      color: var(--tk-accent);
-      font-weight: 600;
+    &--empty {
+      display: grid;
+      place-items: center;
     }
   }
 }
 
-.placeholder {
-  display: grid;
-  place-items: center;
-  border: 1px dashed var(--tk-border-strong);
-  border-radius: var(--tk-radius-md);
+.empty {
+  margin: 0;
   color: var(--tk-text-muted);
+  line-height: 1.5;
   text-align: center;
-
-  &--mini {
-    height: 180px;
-  }
-
-  &--grid {
-    flex: 1;
-    margin: var(--tk-space-4) 0;
-  }
-
-  &--inline {
-    padding: var(--tk-space-4);
-    margin: 0;
-  }
 }
 
-.api-status {
+.status {
   display: flex;
   align-items: center;
   gap: var(--tk-space-2);
+  padding: var(--tk-space-2) var(--tk-space-4);
+  border-top: 1px solid var(--tk-border);
   color: var(--tk-text-secondary);
   font-size: var(--tk-font-size-sm);
 
@@ -147,6 +60,23 @@
 
     &--down {
       background: var(--tk-status-declined);
+    }
+  }
+
+  &__error {
+    color: var(--tk-status-declined);
+  }
+
+  &__dismiss {
+    padding: 0 var(--tk-space-2);
+    background: transparent;
+    border: none;
+    color: var(--tk-text-muted);
+    font-size: var(--tk-font-size-sm);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--tk-text-primary);
     }
   }
 }

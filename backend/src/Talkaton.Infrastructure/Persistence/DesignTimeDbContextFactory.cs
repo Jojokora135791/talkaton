@@ -11,7 +11,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<TalkatonDb
     public TalkatonDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<TalkatonDbContext>()
-            .UseNpgsql("Host=localhost;Port=5432;Database=talkaton;Username=talkaton;Password=talkaton")
+            .UseSqlite("Data Source=talkaton.db")
             .Options;
 
         return new TalkatonDbContext(options);

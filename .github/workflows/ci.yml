@@ -80,11 +80,14 @@ jobs:
       - name: docker compose up
         run: docker compose up -d --build --wait --wait-timeout 300
 
-      - name: Приёмка этапа 1
+      - name: Приёмка — стенд отвечает
         run: |
           curl --fail --silent --show-error http://localhost:5080/health
           curl --fail --silent --show-error http://localhost:8080/api/health
           curl --fail --silent --show-error --output /dev/null http://localhost:8080/
+
+      - name: Приёмка этапа 2 — вход по имени и демо-неделя
+        run: .github/scripts/smoke-stage-2.sh
 
       - name: Логи при падении
         if: failure()

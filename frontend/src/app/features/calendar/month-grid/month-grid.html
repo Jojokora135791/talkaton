@@ -1,0 +1,46 @@
+<div class="month">
+  <div class="month__weekdays">
+    @for (weekday of weekdays(); track weekday) {
+      <span>{{ weekday }}</span>
+    }
+  </div>
+
+  <div class="month__body">
+    @for (week of weeks(); track $index) {
+      <div class="month__week">
+        @for (day of week; track day.key) {
+          <div class="month__cell" [class.month__cell--muted]="!day.inMonth">
+            <button
+              type="button"
+              class="month__number"
+              [class.month__number--today]="day.today"
+              (click)="daySelected.emit(day.date)"
+            >
+              {{ day.number }}
+            </button>
+
+            @for (chip of day.chips; track chip.occurrence.eventId + chip.occurrence.occurrenceStartUtc) {
+              <button
+                type="button"
+                class="month__chip"
+                [class.month__chip--selected]="chip.selected"
+                [class.month__chip--tentative]="chip.occurrence.myStatus === 'tentative'"
+                [style.--tk-event-color]="chip.occurrence.calendarColor"
+                [title]="chip.label"
+                (click)="occurrenceSelected.emit(chip.occurrence)"
+              >
+                {{ chip.label }}
+              </button>
+            }
+
+            @if (day.hiddenCount > 0) {
+              <button type="button" class="month__more" (click)="daySelected.emit(day.date)">
+                ещё {{ day.hiddenCount }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

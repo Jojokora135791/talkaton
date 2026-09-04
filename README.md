@@ -23,29 +23,31 @@ docker compose up --build
 
 Дальше:
 
-| Что | Где |
-|---|---|
-| Календарь | http://localhost:8080 |
-| API | http://localhost:5080 |
-| Swagger | http://localhost:5080/swagger |
-| Health | http://localhost:5080/health |
-| Postgres | `localhost:5432`, база/логин/пароль — `talkaton` |
+| Что       | Где                                     |
+| --------- | --------------------------------------- |
+| Календарь | http://localhost:8080                   |
+| API       | http://localhost:5080                   |
+| Swagger   | http://localhost:5080/swagger           |
+| Health    | http://localhost:5080/health            |
+| База      | SQLite в томе `sqlite-data`, `/data/talkaton.db` |
 
-Миграции и seed применяются на старте api — руками ничего делать не нужно.
-В левой панели должны появиться четыре календаря из макета, внизу центральной
-колонки — строка `API: healthy · Postgres: up`.
+Миграции применяются на старте api — руками ничего делать не нужно.
 
-Сбросить базу: `docker compose down -v`.
+На экране входа достаточно ввести имя: пароля нет, а имя работает как ключ
+к своему рабочему пространству. При первом входе заводятся четыре календаря
+с макета, списки участников и демо-неделя встреч — включая повторяющийся
+«Штаб Платформы Данных» с артефактами и участниками. То же имя в следующий раз
+вернёт ровно те же данные; другое имя — отдельное пространство, поэтому
+многопользовательский сценарий проверяется в двух вкладках.
+
+Сбросить всё: `docker compose down -v`.
 
 ## Разработка без Docker
 
 Бэкенду нужен .NET SDK 8, фронту — Node 22.
 
 ```bash
-# Postgres — из compose, остальное локально
-docker compose up -d postgres
-
-# бэкенд на http://localhost:5080
+# бэкенд на http://localhost:5080, база — файл backend/src/Talkaton.Api/talkaton.db
 dotnet run --project backend/src/Talkaton.Api
 
 # фронтенд на http://localhost:4200, /api проксируется на 5080
@@ -61,6 +63,8 @@ cd frontend && npm run lint && npx ng test --watch=false && npm run build
 
 Те же шаги плюс приёмка `docker compose up` гоняются в GitHub Actions
 на каждый PR — см. [.github/workflows/ci.yml](.github/workflows/ci.yml).
+Приёмка этапа 2 вынесена в [.github/scripts/smoke-stage-2.sh](.github/scripts/smoke-stage-2.sh):
+входит по имени и проверяет, что демо-неделя и витринная встреча на месте.
 
 ### Миграции
 
@@ -79,28 +83,60 @@ CI отдельным шагом проверяет, что модель не р
 
 ```
 talkaton/
-├── frontend/                        Angular 22, тёмная тема
-│   ├── src/styles/tokens.scss       токены темы, снятые с макета
-│   ├── src/app/layout/              шапка с вкладками Толка
-│   ├── src/app/features/calendar/   страница календаря, три колонки
-│   └── nginx.conf                   прод-раздача + проксирование /api
+├── frontend/                              Angular 22, тёмная тема
+│   ├── src/styles/tokens.scss             токены темы, снятые с макета
+│   ├── src/app/core/api/                  единственное место с URL-ами бэкенда
+│   ├── src/app/core/session/              вход по имени, заголовок X-Talkaton-User
+│   ├── src/app/core/time/                 даты, RRULE в человеческом виде
+│   ├── src/app/layout/                    шапка с вкладками Толка
+│   ├── src/app/features/login/            экран входа по имени
+│   ├── src/app/features/calendar/         сетки дня/недели/месяца/года, панели, редактор
+│   ├── src/app/features/reminders/        планировщик напоминаний и тост
+│   └── nginx.conf                         прод-раздача + проксирование /api
 ├── backend/
-│   ├── src/Talkaton.Domain/         сущности
-│   ├── src/Talkaton.Infrastructure/ EF Core, миграции, seed
-│   ├── src/Talkaton.Api/            minimal API, Swagger, CORS
+│   ├── src/Talkaton.Domain/               сущности, RRULE, развёртка вхождений
+│   ├── src/Talkaton.Infrastructure/       EF Core, миграции, наполнение при входе
+│   ├── src/Talkaton.Api/                  minimal API, Swagger, CORS
 │   └── tests/
-├── docs/                            ADR, схема API, скрипт демо
+├── docs/adr/                              решения, которые дорого переигрывать
 └── docker-compose.yml
 ```
+
+## API
+
+Всё под `/api`, Swagger — на `/swagger`. Кроме входа, каждый запрос несёт
+заголовок `X-Talkaton-User` с идентификатором из `POST /api/session`.
+
+| Метод    | Путь                          | Зачем                                        |
+| -------- | ----------------------------- | -------------------------------------------- |
+| `POST`   | `/session`                    | вход по имени, заводит пространство при первом |
+| `GET`    | `/session`                    | проверка входа при перезагрузке страницы     |
+| `GET`    | `/calendars`                  | блок «Мои календари»                         |
+| `PATCH`  | `/calendars/{id}`             | галочка видимости, переименование            |
+| `GET`    | `/events?from=&to=&calendarIds=` | вхождения встреч за период                |
+| `POST`   | `/events`                     | создание встречи                             |
+| `PATCH`  | `/events/{id}`                | правка, перенос drag&drop, resize            |
+| `DELETE` | `/events/{id}`                | удаление серии или одного вхождения          |
+| `POST`   | `/events/{id}/rsvp`           | идёт / не идёт / возможно                    |
+| `GET`    | `/events/{id}/artifacts`      | блок «Артефакты встречи»                     |
+| `GET`    | `/users?query=`               | поиск людей для приглашения                  |
+| `GET`    | `/participant-lists`          | блок «Списки участников»                     |
+
+У `PATCH` и `DELETE` встречи есть параметр `scope`: `series` (по умолчанию)
+правит всю серию, `occurrence` вместе с `occurrenceStart` — одно вхождение.
+Подробности — в [ADR 0004](docs/adr/0004-iskliucheniya-vhozhdeniy.md).
 
 ## Договорённости
 
 - **Время — только в UTC**, таймзона пользователя хранится отдельным полем.
   Переделывать это позже дороже всего.
 - **Повторяемость — по RFC 5545 (RRULE)**, а не самописным форматом: иначе
-  синхронизация с Google и ICS превратится в боль.
+  синхронизация с Google и ICS превратится в боль. Вхождения разворачиваются
+  на чтении, в базу попадают только исключения.
 - **Цвета — только через `var(--tk-*)`.** Ни одного HEX в компонентах:
   на этапе склейки с Толком меняются только токены.
+- **Фронт ходит в бэкенд только через `TalkatonApi`**, а вход живёт в
+  `SessionService`. На этапе 6 SSO Контура заменяет один файл.
 - **Весь код, общающийся с Толком, живёт за интерфейсом `ITalkGateway`** (этап 3).
   Это главная страховка проекта.
 

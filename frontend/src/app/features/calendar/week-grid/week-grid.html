@@ -1,0 +1,94 @@
+<div class="grid" [style.--tk-day-count]="columns().length">
+  <div class="grid__row grid__head">
+    <div class="grid__gutter"></div>
+    @for (column of columns(); track column.key) {
+      <div class="grid__day" [class.grid__day--today]="column.today">
+        <span class="grid__weekday">{{ column.weekday }}</span>
+        <span class="grid__number">{{ column.dayNumber }}</span>
+      </div>
+    }
+  </div>
+
+  @if (hasAllDay()) {
+    <div class="grid__row grid__allday">
+      <div class="grid__gutter grid__gutter--label">весь день</div>
+      @for (column of columns(); track column.key) {
+        <div class="grid__allday-cell">
+          @for (item of column.allDay; track item.eventId + item.occurrenceStartUtc) {
+            <button
+              type="button"
+              class="chip"
+              [style.--tk-event-color]="item.calendarColor"
+              (click)="onAllDaySelected(item)"
+            >
+              {{ item.title }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <div class="grid__scroller" #scroller>
+    <div class="grid__canvas">
+      <div class="grid__hours">
+        @for (hour of hours; track hour) {
+          <div class="grid__hour"><span>{{ hour }}</span></div>
+        }
+      </div>
+
+      <div class="grid__columns" #columnsHost>
+        @for (column of columns(); track column.key) {
+          <div
+            class="grid__column"
+            [class.grid__column--today]="column.today"
+            (dblclick)="onColumnDoubleClick($event, column)"
+          >
+            @for (hour of hours; track hour) {
+              <div class="grid__slot"></div>
+            }
+
+            @for (item of column.events; track item.key) {
+              <div
+                class="event"
+                [class.event--selected]="item.selected"
+                [class.event--dragging]="item.dragging"
+                [class.event--tentative]="item.occurrence.myStatus === 'tentative'"
+                [class.event--declined]="item.occurrence.myStatus === 'declined'"
+                [style.--tk-event-color]="item.occurrence.calendarColor"
+                [style.top.%]="item.top"
+                [style.height.%]="item.height"
+                [style.left.%]="item.left"
+                [style.width.%]="item.width"
+                [title]="item.occurrence.title + ' · ' + item.timeLabel"
+                (pointerdown)="onPointerDown($event, item)"
+                (pointermove)="onPointerMove($event)"
+                (pointerup)="onPointerUp($event)"
+              >
+                <span class="event__title">{{ item.occurrence.title }}</span>
+                <span class="event__time">{{ item.timeLabel }}</span>
+
+                <span class="event__badges" aria-hidden="true">
+                  @if (item.occurrence.recurrenceRule) {
+                    <span title="Повторяющаяся встреча">⟳</span>
+                  }
+                  @if (item.occurrence.artifactCount > 0) {
+                    <span title="Артефакты встречи">📎{{ item.occurrence.artifactCount }}</span>
+                  }
+                </span>
+
+                <span class="event__resize" aria-hidden="true"></span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (showNowLine()) {
+          <div class="now" [style.top.%]="nowLineTop()" aria-hidden="true">
+            <span class="now__label">{{ nowLabel() }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

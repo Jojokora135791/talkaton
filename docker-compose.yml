@@ -1,36 +1,19 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: talkaton-postgres
-    environment:
-      POSTGRES_DB: talkaton
-      POSTGRES_USER: talkaton
-      POSTGRES_PASSWORD: talkaton
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U talkaton -d talkaton"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   api:
     build:
       context: ./backend
     container_name: talkaton-api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=talkaton;Username=talkaton;Password=talkaton"
+      # Файл базы живёт в томе: пересборка образа не стирает наработанные встречи.
+      ConnectionStrings__Sqlite: "Data Source=/data/talkaton.db"
       # Фронт в compose ходит через nginx, но оставляем CORS для случая «ng serve + api из compose».
       Cors__AllowedOrigins__0: "http://localhost:4200"
       Cors__AllowedOrigins__1: "http://localhost:8080"
     ports:
       - "5080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    volumes:
+      - sqlite-data:/data
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
       interval: 10s
@@ -45,7 +28,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
-  postgres-data:
+  sqlite-data:

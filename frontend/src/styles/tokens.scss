@@ -10,6 +10,7 @@
   --tk-surface-panel: #1c2029;
   --tk-surface-raised: #232833;
   --tk-surface-hover: #2b3140;
+  --tk-surface-overlay: #1f2430;
 
   /* Границы и разделители сетки. */
   --tk-border: #2c313d;
@@ -25,6 +26,7 @@
   --tk-accent: #3d7dfa;
   --tk-accent-hover: #5590ff;
   --tk-accent-contrast: #ffffff;
+  --tk-accent-soft: #24334f;
 
   /* Статусы участников: идёт / возможно / не идёт. */
   --tk-status-accepted: #3ec97a;
@@ -39,6 +41,14 @@
   --tk-cal-personal: #2fbf71;
   --tk-cal-birthday: #e05572;
   --tk-cal-tasks: #d9a441;
+
+  /* Палитра аватаров. Бэкенд хранит только индекс 0..5 — цвета живут здесь. */
+  --tk-avatar-0: #4c8dff;
+  --tk-avatar-1: #2fbf71;
+  --tk-avatar-2: #e05572;
+  --tk-avatar-3: #d9a441;
+  --tk-avatar-4: #9a6ef0;
+  --tk-avatar-5: #37b5c4;
 
   /* Геометрия. */
   --tk-radius-sm: 4px;
@@ -55,8 +65,20 @@
   --tk-left-panel-width: 248px;
   --tk-right-panel-width: 320px;
 
+  /* Высота часа в недельной сетке: 24 часа помещаются в скролл, а полчаса ещё кликабельны. */
+  --tk-hour-height: 44px;
+  --tk-time-gutter-width: 56px;
+
   --tk-font: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
   --tk-font-size-sm: 12px;
   --tk-font-size-md: 13px;
   --tk-font-size-lg: 15px;
+
+  --tk-shadow-overlay: 0 12px 32px rgb(0 0 0 / 45%);
+
+  /* Слои: сетка → карточки → линия времени → диалоги → тосты напоминаний. */
+  --tk-z-event: 2;
+  --tk-z-now-line: 5;
+  --tk-z-dialog: 40;
+  --tk-z-toast: 50;
 }

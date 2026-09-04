@@ -13,8 +13,36 @@
     }
   </nav>
 
-  <button type="button" class="header__call">
-    <span aria-hidden="true">📹</span>
-    Созвониться сейчас
-  </button>
+  <div class="header__right">
+    @if (canAskForNotifications()) {
+      <button
+        type="button"
+        class="header__ghost"
+        title="Разрешить браузеру показывать напоминания о встречах"
+        (click)="enableNotifications()"
+      >
+        <span aria-hidden="true">🔔</span>
+        Включить напоминания
+      </button>
+    }
+
+    <button type="button" class="header__ghost">
+      <span aria-hidden="true">📹</span>
+      Созвониться сейчас
+    </button>
+
+    @if (user(); as person) {
+      <button
+        type="button"
+        class="header__user"
+        [title]="person.displayName + ' — выйти'"
+        (click)="signOut()"
+      >
+        <span class="header__avatar" [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'">
+          {{ initials() }}
+        </span>
+        {{ person.displayName }}
+      </button>
+    }
+  </div>
 </header>

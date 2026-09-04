@@ -1,0 +1,71 @@
+<button type="button" class="create" (click)="createRequested.emit()">
+  <span aria-hidden="true">＋</span>
+  Создать встречу
+</button>
+
+<app-mini-month
+  [selected]="selectedDate()"
+  [busyDays]="busyDays()"
+  (daySelected)="daySelected.emit($event)"
+/>
+
+<section>
+  <h2 class="section-title">Мои календари</h2>
+  <ul class="calendars">
+    @for (calendar of calendars(); track calendar.id) {
+      <li>
+        <label class="calendars__row">
+          <input
+            type="checkbox"
+            class="calendars__box"
+            [style.--tk-swatch]="calendar.color"
+            [checked]="calendar.isVisible"
+            (change)="calendarToggled.emit(calendar)"
+          />
+          <span class="calendars__name" [class.calendars__name--off]="!calendar.isVisible">
+            {{ calendar.name }}
+          </span>
+        </label>
+      </li>
+    }
+  </ul>
+</section>
+
+<section>
+  <div class="section-title section-title--row">
+    <h2 class="section-title__text">Списки участников</h2>
+    <button
+      type="button"
+      class="section-title__add"
+      aria-label="Добавить список участников"
+      (click)="startAddingList()"
+    >
+      ＋
+    </button>
+  </div>
+
+  @if (addingList()) {
+    <form class="new-list" (ngSubmit)="submitList()">
+      <input
+        class="new-list__input"
+        name="listName"
+        placeholder="Название списка"
+        [ngModel]="newListName()"
+        (ngModelChange)="newListName.set($event)"
+        (keydown.escape)="cancelList()"
+      />
+    </form>
+  }
+
+  <ul class="lists">
+    @for (list of participantLists(); track list.id) {
+      <li class="lists__row">
+        <span class="lists__icon" aria-hidden="true">👥</span>
+        <span class="lists__name">{{ list.name }}</span>
+        <span class="lists__count">{{ list.members.length }}</span>
+      </li>
+    } @empty {
+      <li class="lists__empty">Пока ни одного списка</li>
+    }
+  </ul>
+</section>

@@ -1,0 +1,138 @@
+@let occurrence = details().occurrence;
+
+<div class="panel">
+  <div class="panel__accent" [style.background]="occurrence.calendarColor"></div>
+
+  <header class="panel__header">
+    <h2 class="panel__title">{{ occurrence.title }}</h2>
+    <button type="button" class="panel__close" aria-label="Закрыть панель" (click)="closed.emit()">✕</button>
+  </header>
+
+  <section class="row">
+    <span class="row__icon" aria-hidden="true">🕐</span>
+    <div>
+      <p class="row__main">{{ heading() }}</p>
+      @if (recurrenceText(); as repeat) {
+        <p class="row__sub">{{ repeat }}</p>
+      }
+      @if (occurrence.isMoved) {
+        <p class="row__sub">Это вхождение перенесено из серии</p>
+      }
+    </div>
+  </section>
+
+  @if (roomLabel(); as room) {
+    <section class="row">
+      <span class="row__icon" aria-hidden="true">📹</span>
+      <div>
+        <p class="row__main">Видеовстреча в Толк</p>
+        <p class="row__sub">{{ room }}</p>
+      </div>
+    </section>
+
+    <button type="button" class="join" (click)="join()">
+      <span aria-hidden="true">📹</span>
+      Присоединиться
+    </button>
+  }
+
+  @if (details().description; as description) {
+    <p class="description">{{ description }}</p>
+  }
+
+  <section class="block">
+    <h3 class="block__title">Ваш ответ</h3>
+    <div class="rsvp">
+      @for (status of rsvpOptions; track status) {
+        <button
+          type="button"
+          class="rsvp__button"
+          [class.rsvp__button--active]="occurrence.myStatus === status"
+          [attr.data-status]="status"
+          (click)="rsvpChanged.emit(status)"
+        >
+          {{ statusLabels[status] }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="block">
+    <h3 class="block__title">Напоминание</h3>
+    <select
+      class="reminder"
+      [ngModel]="occurrence.reminderMinutesBefore ?? 0"
+      (ngModelChange)="onReminderChange($event)"
+    >
+      @for (minutes of reminderChoices; track minutes) {
+        <option [value]="minutes">{{ reminderLabel(minutes) }}</option>
+      }
+    </select>
+  </section>
+
+  @if (details().artifacts.length > 0) {
+    <section class="block">
+      <h3 class="block__title">Артефакты встречи</h3>
+      <ul class="artifacts">
+        @for (artifact of details().artifacts; track artifact.id) {
+          <li>
+            <button type="button" class="artifact" (click)="openArtifact(artifact.url)">
+              <span class="artifact__icon" aria-hidden="true">{{ iconOf(artifact.kind) }}</span>
+              <span class="artifact__body">
+                <span class="artifact__title">{{ artifact.title }}</span>
+                @if (artifact.subtitle) {
+                  <span class="artifact__subtitle">{{ artifact.subtitle }}</span>
+                }
+              </span>
+              <span class="artifact__arrow" aria-hidden="true">›</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  <section class="block">
+    <h3 class="block__title">Участники · {{ details().participants.length }}</h3>
+    <ul class="people">
+      @for (person of details().participants; track person.userId) {
+        <li class="people__row">
+          <span
+            class="people__avatar"
+            [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'"
+            aria-hidden="true"
+          >
+            {{ person.displayName.charAt(0) }}
+          </span>
+          <span class="people__name">
+            {{ person.displayName }}
+            @if (person.isOrganizer) {
+              <span class="people__role">организатор</span>
+            }
+          </span>
+          <span class="people__status" [attr.data-status]="person.status">
+            {{ statusLabels[person.status] }}
+          </span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  @if (occurrence.isOrganizer) {
+    <footer class="actions">
+      <button type="button" class="actions__button" (click)="editRequested.emit()">Изменить</button>
+      @if (occurrence.recurrenceRule) {
+        <button type="button" class="actions__button" (click)="deleteRequested.emit('occurrence')">
+          Удалить вхождение
+        </button>
+        <button type="button" class="actions__button actions__button--danger" (click)="deleteRequested.emit('series')">
+          Удалить серию
+        </button>
+      } @else {
+        <button type="button" class="actions__button actions__button--danger" (click)="deleteRequested.emit('series')">
+          Удалить
+        </button>
+      }
+    </footer>
+  }
+</div>
