@@ -15,9 +15,9 @@ jobs:
     name: Бэкенд — сборка и тесты
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '8.0.x'
 
@@ -37,7 +37,7 @@ jobs:
             --project backend/src/Talkaton.Infrastructure \
             --startup-project backend/src/Talkaton.Infrastructure
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: backend-test-results
@@ -51,9 +51,9 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
@@ -75,7 +75,7 @@ jobs:
     name: Docker Compose поднимается
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: docker compose up
         run: docker compose up -d --build --wait --wait-timeout 300
