@@ -1,0 +1,73 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-space-4);
+  height: var(--tk-header-height);
+  padding: 0 var(--tk-space-4);
+  background: var(--tk-surface-panel);
+  border-bottom: 1px solid var(--tk-border);
+
+  &__brand {
+    font-size: var(--tk-font-size-lg);
+    font-weight: 600;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: var(--tk-space-1);
+  }
+
+  &__call {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    margin-left: auto;
+    padding: var(--tk-space-2) var(--tk-space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--tk-radius-md);
+    color: var(--tk-text-primary);
+    font-size: var(--tk-font-size-md);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+    }
+  }
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--tk-space-2);
+  padding: var(--tk-space-2) var(--tk-space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--tk-radius-md);
+  color: var(--tk-text-secondary);
+  font-size: var(--tk-font-size-md);
+
+  &:not(:disabled):hover {
+    background: var(--tk-surface-hover);
+  }
+
+  &--active {
+    background: var(--tk-surface-raised);
+    color: var(--tk-text-primary);
+    font-weight: 600;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &__badge {
+    min-width: 16px;
+    padding: 0 var(--tk-space-1);
+    border-radius: 8px;
+    background: var(--tk-accent);
+    color: var(--tk-accent-contrast);
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+  }
+}

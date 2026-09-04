@@ -1,0 +1,20 @@
+@use 'styles/tokens';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--tk-surface-base);
+  color: var(--tk-text-primary);
+  font-family: var(--tk-font);
+  font-size: var(--tk-font-size-md);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}

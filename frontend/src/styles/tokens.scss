@@ -1,0 +1,62 @@
+/**
+ * Токены тёмной темы, снятые с макета `template_1.png`.
+ *
+ * Правило на весь проект: компоненты не пишут HEX-цвета, только `var(--tk-*)`.
+ * На этапе 6 эти значения меняются на дизайн-систему Толка — и больше ничего.
+ */
+:root {
+  /* Поверхности: от самой тёмной (фон приложения) к самой светлой (карточка). */
+  --tk-surface-base: #171a21;
+  --tk-surface-panel: #1c2029;
+  --tk-surface-raised: #232833;
+  --tk-surface-hover: #2b3140;
+
+  /* Границы и разделители сетки. */
+  --tk-border: #2c313d;
+  --tk-border-strong: #3a4150;
+  --tk-grid-line: #262b35;
+
+  /* Текст. */
+  --tk-text-primary: #e8ebf0;
+  --tk-text-secondary: #a3abb9;
+  --tk-text-muted: #6f7885;
+
+  /* Акцент — синий из шапки, кнопки «Присоединиться» и выделения дня. */
+  --tk-accent: #3d7dfa;
+  --tk-accent-hover: #5590ff;
+  --tk-accent-contrast: #ffffff;
+
+  /* Статусы участников: идёт / возможно / не идёт. */
+  --tk-status-accepted: #3ec97a;
+  --tk-status-tentative: #d9a441;
+  --tk-status-declined: #e05572;
+
+  /* Линия текущего времени — основа фичи уведомлений. */
+  --tk-now-line: #e0413f;
+
+  /* Цвета календарей из блока «Мои календари». */
+  --tk-cal-work: #4c8dff;
+  --tk-cal-personal: #2fbf71;
+  --tk-cal-birthday: #e05572;
+  --tk-cal-tasks: #d9a441;
+
+  /* Геометрия. */
+  --tk-radius-sm: 4px;
+  --tk-radius-md: 8px;
+  --tk-radius-lg: 12px;
+
+  --tk-space-1: 4px;
+  --tk-space-2: 8px;
+  --tk-space-3: 12px;
+  --tk-space-4: 16px;
+  --tk-space-5: 24px;
+
+  --tk-header-height: 52px;
+  --tk-left-panel-width: 248px;
+  --tk-right-panel-width: 320px;
+
+  --tk-font: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+  --tk-font-size-sm: 12px;
+  --tk-font-size-md: 13px;
+  --tk-font-size-lg: 15px;
+}

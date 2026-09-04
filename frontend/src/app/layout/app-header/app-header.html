@@ -1,0 +1,20 @@
+<header class="header">
+  <span class="header__brand">Контур Толк</span>
+
+  <nav class="header__tabs">
+    @for (tab of tabs; track tab.label) {
+      <button type="button" class="tab" [class.tab--active]="tab.active" [disabled]="!tab.active">
+        <span class="tab__icon" aria-hidden="true">{{ tab.icon }}</span>
+        <span>{{ tab.label }}</span>
+        @if (tab.badge) {
+          <span class="tab__badge">{{ tab.badge }}</span>
+        }
+      </button>
+    }
+  </nav>
+
+  <button type="button" class="header__call">
+    <span aria-hidden="true">📹</span>
+    Созвониться сейчас
+  </button>
+</header>
