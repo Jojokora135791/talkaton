@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MiniMonth } from '../mini-month/mini-month';
 import { Calendar, ParticipantList } from '../../../core/api/models';
+import { APP_VERSION } from '../../../core/app-version';
 
 /**
  * Левая панель макета: создание встречи, мини-календарь, «Мои календари»
@@ -26,4 +27,6 @@ export class LeftPanel {
   readonly daySelected = output<Date>();
   readonly calendarToggled = output<Calendar>();
   readonly listCreateRequested = output<void>();
+
+  protected readonly version = APP_VERSION;
 }
