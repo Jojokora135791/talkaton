@@ -5,6 +5,11 @@
       "label": "бэкенд: собрать",
       "type": "shell",
       "command": "dotnet",
+      // SDK, поставленный скриптом dotnet-install.ps1, ложится в профиль и в PATH
+      // текущего окна VS Code не попадает — дописываем его сами, чтобы работало без перезапуска.
+      "options": {
+        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+      },
       "args": [
         "build",
         "${workspaceFolder}/backend/Talkaton.sln",
@@ -71,6 +76,9 @@
       "label": "тесты: бэкенд",
       "type": "shell",
       "command": "dotnet",
+      "options": {
+        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+      },
       "args": ["test", "${workspaceFolder}/backend/Talkaton.sln"],
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": "$msCompile",
@@ -97,6 +105,9 @@
       "label": "миграции: проверить расхождение с моделью",
       "type": "shell",
       "command": "dotnet",
+      "options": {
+        "env": { "PATH": "${env:PATH};${env:USERPROFILE}\\.dotnet;${env:USERPROFILE}\\.dotnet\\tools" }
+      },
       "args": [
         "ef",
         "migrations",

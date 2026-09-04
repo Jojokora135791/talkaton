@@ -79,14 +79,21 @@ cd frontend && npm ci && npm start
 
 ### Если .NET SDK ещё не установлен
 
-Проще всего — установщик с https://dotnet.microsoft.com/download/dotnet/8.0
-(раздел SDK 8.0.x → Windows x64 Installer). Без прав администратора подойдёт скрипт:
+Установщик с https://dotnet.microsoft.com/download/dotnet/8.0 (SDK 8.0.x → Windows x64)
+либо, без прав администратора, скрипт в профиль пользователя:
 
 ```powershell
 Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
-./dotnet-install.ps1 -Channel 8.0
-$env:PATH += ";$env:USERPROFILE\.dotnet"
+./dotnet-install.ps1 -Channel 8.0 -InstallDir "$env:USERPROFILE\.dotnet"
+dotnet tool install --global dotnet-ef --version 8.0.10
+
+# PATH скрипт сам не правит
+$user = [Environment]::GetEnvironmentVariable('PATH','User')
+[Environment]::SetEnvironmentVariable('PATH', "$user;$env:USERPROFILE\.dotnet", 'User')
 ```
+
+После этого **VS Code нужно перезапустить** — расширение C# ищет `dotnet` в PATH при старте.
+Задачи сборки и тестов дописывают этот путь сами и работают сразу.
 
 Пока SDK нет, тестировать можно конфигурацией **Браузер к стенду в Docker**.
 
