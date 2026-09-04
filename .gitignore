@@ -29,8 +29,17 @@ yarn-error.log*
 
 # ---------- VS / VS Code ----------
 .vs/
+# Запуск и задачи — общие для команды, личные настройки редактора — нет.
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ---------- SQLite ----------
+# Локальная база из `dotnet run`; в compose она живёт в томе.
+*.db
+*.db-shm
+*.db-wal
 
 # ---------- OS ----------
 .DS_Store

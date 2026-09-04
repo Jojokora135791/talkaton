@@ -1,0 +1,16 @@
+@if (pending(); as reminder) {
+  <aside class="toast" role="alert" [class.toast--now]="reminder.inProgress">
+    <div class="toast__body">
+      <p class="toast__headline">{{ headline() }}</p>
+      <p class="toast__title">{{ reminder.occurrence.title }}</p>
+      <p class="toast__meta">{{ timeRange() }} · {{ reminder.occurrence.calendarName }}</p>
+    </div>
+
+    <div class="toast__actions">
+      @if (reminder.occurrence.talkRoomSlug) {
+        <button type="button" class="toast__join" (click)="join()">Присоединиться</button>
+      }
+      <button type="button" class="toast__dismiss" (click)="dismiss()">Скрыть</button>
+    </div>
+  </aside>
+}

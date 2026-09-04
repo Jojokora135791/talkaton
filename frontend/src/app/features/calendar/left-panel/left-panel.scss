@@ -1,0 +1,134 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-5);
+}
+
+.create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tk-space-2);
+  padding: var(--tk-space-3);
+  background: var(--tk-accent);
+  border: none;
+  border-radius: var(--tk-radius-md);
+  color: var(--tk-accent-contrast);
+  font-size: var(--tk-font-size-md);
+  font-weight: 600;
+
+  &:hover {
+    background: var(--tk-accent-hover);
+  }
+}
+
+.section-title {
+  margin: 0 0 var(--tk-space-3);
+  color: var(--tk-text-secondary);
+  font-size: var(--tk-font-size-sm);
+  font-weight: 600;
+
+  &--row {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+  }
+
+  &__text {
+    flex: 1;
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  &__add {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--tk-radius-sm);
+    color: var(--tk-text-secondary);
+    line-height: 1;
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+  }
+}
+
+.calendars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    cursor: pointer;
+  }
+
+  /* Цвет календаря приезжает из базы, поэтому единственный способ покрасить — переменная. */
+  &__box {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--tk-swatch);
+    cursor: pointer;
+  }
+
+  &__name--off {
+    color: var(--tk-text-muted);
+  }
+}
+
+.lists {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tk-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    min-height: 30px;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: var(--tk-radius-sm);
+    background: var(--tk-list-color);
+    color: var(--tk-accent-contrast);
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  &__name {
+    flex: 1;
+  }
+
+  &__count {
+    color: var(--tk-text-muted);
+    font-size: var(--tk-font-size-sm);
+  }
+
+  &__empty {
+    color: var(--tk-text-muted);
+    font-size: var(--tk-font-size-sm);
+  }
+}

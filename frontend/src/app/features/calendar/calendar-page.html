@@ -1,65 +1,109 @@
-<div class="layout">
-  <aside class="layout__left panel">
-    <button type="button" class="create-button">+ Создать встречу</button>
-
-    <section class="placeholder placeholder--mini">Мини-календарь месяца — этап 2</section>
-
-    <section>
-      <h2 class="section-title">Мои календари</h2>
-      <ul class="calendars">
-        @for (calendar of calendars; track calendar.name) {
-          <li class="calendars__item">
-            <span
-              class="calendars__swatch"
-              [class.calendars__swatch--off]="!calendar.visible"
-              [style.background]="calendar.visible ? 'var(' + calendar.colorToken + ')' : 'transparent'"
-              [style.border-color]="'var(' + calendar.colorToken + ')'"
-            ></span>
-            <span [class.calendars__name--off]="!calendar.visible">{{ calendar.name }}</span>
-          </li>
-        }
-      </ul>
-    </section>
-
-    <section>
-      <h2 class="section-title">Списки участников</h2>
-      <p class="placeholder placeholder--inline">Этап 2</p>
-    </section>
+<div class="layout" [class.layout--details]="store.details()">
+  <aside class="layout__left">
+    <app-left-panel
+      [calendars]="store.calendars()"
+      [participantLists]="store.participantLists()"
+      [selectedDate]="store.anchor()"
+      [busyDays]="busyDays()"
+      (createRequested)="openCreateEditor()"
+      (daySelected)="onDayPicked($event)"
+      (calendarToggled)="onCalendarToggled($event)"
+      (listCreateRequested)="openListEditor()"
+    />
   </aside>
 
-  <main class="layout__center panel">
-    <div class="toolbar">
-      <button type="button" class="toolbar__today">Сегодня</button>
-      <span class="toolbar__range">Недельная сетка</span>
-      <div class="toolbar__views">
-        <span>День</span>
-        <span class="toolbar__views--active">Неделя</span>
-        <span>Месяц</span>
-        <span>Год</span>
-      </div>
-    </div>
+  <main class="layout__center">
+    <app-calendar-toolbar
+      [title]="store.title()"
+      [view]="store.view()"
+      [search]="store.search()"
+      [loading]="store.loading()"
+      (todayRequested)="store.today()"
+      (stepped)="store.step($event)"
+      (viewChanged)="onViewChanged($event)"
+      (searchChanged)="store.setSearch($event)"
+    />
 
-    <div class="placeholder placeholder--grid">
-      Сетка недели с линией текущего времени — этап 2
-    </div>
+    @switch (store.view()) {
+      @case ('month') {
+        <app-month-grid
+          [days]="days()"
+          [occurrences]="store.visibleOccurrences()"
+          [month]="store.anchor()"
+          [selected]="store.selected()"
+          (daySelected)="onDayDrilledDown($event)"
+          (occurrenceSelected)="onOccurrenceSelected($event)"
+        />
+      }
+      @case ('year') {
+        <app-year-view
+          [year]="store.anchor().getFullYear()"
+          [busyDays]="busyDays()"
+          (daySelected)="onDayDrilledDown($event)"
+        />
+      }
+      @default {
+        <app-week-grid
+          [days]="days()"
+          [occurrences]="store.visibleOccurrences()"
+          [selected]="store.selected()"
+          (occurrenceSelected)="onOccurrenceSelected($event)"
+          (occurrenceMoved)="onOccurrenceMoved($event)"
+          (slotPicked)="openCreateEditor($event)"
+        />
+      }
+    }
 
-    <footer class="api-status">
-      @if (health(); as h) {
-        <span class="api-status__dot" [class.api-status__dot--down]="h.database === 'down'"></span>
-        API: {{ h.status }} · Postgres: {{ h.database }} · сборка {{ h.version }}
-      } @else if (healthError(); as error) {
-        <span class="api-status__dot api-status__dot--down"></span>
-        {{ error }}
+    <footer class="status">
+      @if (store.error(); as message) {
+        <span class="status__dot status__dot--down"></span>
+        <span class="status__error">{{ message }}</span>
+        <button type="button" class="status__dismiss" (click)="store.dismissError()">Понятно</button>
+      } @else if (health(); as h) {
+        <span class="status__dot" [class.status__dot--down]="h.database === 'down'"></span>
+        API: {{ h.status }} · БД: {{ h.database }} · сборка {{ h.version }}
       } @else {
         Проверяем связь с API…
       }
     </footer>
+
+    <button type="button" class="mobile-create" title="Создать встречу · C" (click)="openCreateEditor()">
+      <span aria-hidden="true">＋</span>
+      Встреча
+    </button>
   </main>
 
-  <aside class="layout__right panel">
-    <h2 class="section-title">Панель встречи</h2>
-    <p class="placeholder placeholder--inline">
-      Артефакты и участники выбранной встречи — этап 2
-    </p>
-  </aside>
+  @if (store.details(); as details) {
+    <aside class="layout__right">
+      <app-event-details
+        [details]="details"
+        (closed)="store.select(null)"
+        (editRequested)="openEditEditor()"
+        (deleteRequested)="onDeleteRequested($event)"
+        (rsvpChanged)="onRsvp($event)"
+        (reminderChanged)="onReminderChanged($event)"
+      />
+    </aside>
+  }
 </div>
+
+@if (editorSeed(); as seed) {
+  <app-event-editor
+    [seed]="seed"
+    [calendars]="store.calendars()"
+    [people]="people()"
+    [participantLists]="store.participantLists()"
+    (saved)="onEditorSaved($event)"
+    (cancelled)="editorSeed.set(null)"
+  />
+}
+
+@if (listEditorOpen()) {
+  <app-participant-list-editor
+    [people]="people()"
+    [saving]="listSaving()"
+    [serverError]="listError()"
+    (saved)="onListCreated($event)"
+    (cancelled)="closeListEditor()"
+  />
+}

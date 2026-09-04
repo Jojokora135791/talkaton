@@ -1,0 +1,61 @@
+{
+  // Запуск и отладка Толкатрона. Три сценария:
+  //   1. «Стенд: бэкенд + фронтенд» — обычная разработка, точки останова и там, и там.
+  //      Нужен .NET SDK 8 и расширение C# Dev Kit.
+  //   2. «Фронтенд: ng serve + браузер» — если бэкенд уже поднят (руками или в Docker).
+  //   3. «Браузер к стенду в Docker» — .NET и Node не нужны вовсе, только Docker.
+  //
+  // Браузер: если Chrome не установлен, замените "type": "chrome" на "msedge".
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Бэкенд: API на 5080",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "бэкенд: собрать",
+      "program": "${workspaceFolder}/backend/src/Talkaton.Api/bin/Debug/net8.0/Talkaton.Api.dll",
+      // cwd важен: база SQLite создаётся рядом, как файл talkaton.db.
+      "cwd": "${workspaceFolder}/backend/src/Talkaton.Api",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5080"
+      }
+    },
+    {
+      "name": "Фронтенд: ng serve + браузер",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "фронтенд: ng serve",
+      "url": "http://localhost:4200/",
+      "webRoot": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Браузер к стенду в Docker (8080)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "docker: поднять стенд",
+      "url": "http://localhost:8080/",
+      "webRoot": "${workspaceFolder}/frontend"
+    },
+    {
+      "name": "Swagger",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5080/swagger",
+      "webRoot": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Стенд: бэкенд + фронтенд",
+      "configurations": ["Бэкенд: API на 5080", "Фронтенд: ng serve + браузер"],
+      "stopAll": true,
+      "presentation": {
+        "group": "1-стенд",
+        "order": 1
+      }
+    }
+  ]
+}

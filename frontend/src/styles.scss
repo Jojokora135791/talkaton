@@ -18,3 +18,61 @@ button {
   font-family: inherit;
   cursor: pointer;
 }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--tk-accent-hover);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--tk-accent);
+  color: var(--tk-accent-contrast);
+}
+
+/* Геометрия SVG в панели встречи глобальна, чтобы не расходовать component-style budget. */
+app-event-details {
+  .row__icon {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .join svg {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+  }
+
+  .artifact__icon {
+    &[data-kind='recording'] {
+      color: var(--tk-cal-birthday);
+    }
+
+    &[data-kind='protocol'] {
+      color: var(--tk-status-accepted);
+    }
+
+    &[data-kind='board'] {
+      color: var(--tk-accent-hover);
+    }
+
+    &[data-kind='tasks'] {
+      color: var(--tk-cal-tasks);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<div class="toolbar">
+  <button type="button" class="toolbar__today" title="Сегодня · T" (click)="todayRequested.emit()">Сегодня</button>
+
+  <div class="toolbar__nav">
+    <button type="button" aria-label="Назад" title="Назад · ←" (click)="stepped.emit(-1)">‹</button>
+    <button type="button" aria-label="Вперёд" title="Вперёд · →" (click)="stepped.emit(1)">›</button>
+  </div>
+
+  <h1 class="toolbar__title">
+    {{ title() }}
+    @if (loading()) {
+      <span class="toolbar__spinner" aria-label="Загружаем встречи"></span>
+    }
+  </h1>
+
+  <label class="toolbar__search">
+    <span aria-hidden="true">🔍</span>
+    <input
+      type="search"
+      name="search"
+      placeholder="Поиск по темам"
+      [ngModel]="search()"
+      (ngModelChange)="searchChanged.emit($event)"
+    />
+  </label>
+
+  <div class="toolbar__views" role="group" aria-label="Вид календаря">
+    @for (option of views; track option.value) {
+      <button
+        type="button"
+        class="toolbar__view"
+        [class.toolbar__view--active]="option.value === view()"
+        [attr.aria-pressed]="option.value === view()"
+        [title]="option.label + ' · ' + option.shortcut"
+        (click)="viewChanged.emit(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+</div>

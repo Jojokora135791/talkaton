@@ -1,0 +1,113 @@
+/* Хост тоже участник flex-колонки страницы: без этого сетка вылезает за экран,
+   вместо того чтобы прокручиваться внутри себя, и утягивает подвал вниз. */
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.month {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+
+  &__weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    padding: var(--tk-space-2) 0;
+    border-bottom: 1px solid var(--tk-border);
+    color: var(--tk-text-muted);
+    font-size: 11px;
+    text-align: center;
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  &__week {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    min-height: 96px;
+    border-bottom: 1px solid var(--tk-border);
+  }
+
+  &__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--tk-space-1);
+    overflow: hidden;
+    border-left: 1px solid var(--tk-border);
+
+    &--muted {
+      background: rgb(0 0 0 / 12%);
+    }
+  }
+
+  &__number {
+    align-self: flex-start;
+    min-width: 22px;
+    padding: 2px;
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    color: var(--tk-text-secondary);
+    font-size: var(--tk-font-size-sm);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+
+    &--today {
+      background: var(--tk-accent);
+      color: var(--tk-accent-contrast);
+      font-weight: 700;
+    }
+  }
+
+  &__chip {
+    padding: 1px var(--tk-space-2);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--tk-event-color) 26%, var(--tk-surface-base));
+    border: 1px solid transparent;
+    border-left: 3px solid var(--tk-event-color);
+    border-radius: var(--tk-radius-sm);
+    color: var(--tk-text-primary);
+    font-size: 11px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--tentative {
+      background: transparent;
+      border-style: dashed;
+      border-left-style: solid;
+    }
+
+    &--selected {
+      border-color: var(--tk-accent-contrast);
+    }
+  }
+
+  &__more {
+    align-self: flex-start;
+    padding: 0 var(--tk-space-1);
+    background: transparent;
+    border: none;
+    color: var(--tk-text-muted);
+    font-size: 11px;
+
+    &:hover {
+      color: var(--tk-text-primary);
+    }
+  }
+}

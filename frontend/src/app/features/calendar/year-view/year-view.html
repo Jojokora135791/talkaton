@@ -1,0 +1,33 @@
+<div class="year">
+  @for (month of months(); track month.index) {
+    <section class="year__month">
+      <h3 class="year__title">{{ month.title }}</h3>
+
+      <div class="year__weekdays">
+        @for (weekday of weekdays(); track $index) {
+          <span>{{ weekday }}</span>
+        }
+      </div>
+
+      @for (week of month.weeks; track $index) {
+        <div class="year__week">
+          @for (day of week; track day.key) {
+            @if (day.inMonth) {
+              <button
+                type="button"
+                class="year__day"
+                [class.year__day--today]="day.today"
+                [class.year__day--busy]="day.busy"
+                (click)="daySelected.emit(day.date)"
+              >
+                {{ day.number }}
+              </button>
+            } @else {
+              <span class="year__day year__day--empty"></span>
+            }
+          }
+        </div>
+      }
+    </section>
+  }
+</div>

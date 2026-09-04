@@ -1,0 +1,30 @@
+<div class="login">
+  <form class="login__card" (ngSubmit)="submit()">
+    <h1 class="login__title">Толкатрон</h1>
+    <p class="login__hint">
+      Календарь для Контур.Толк. Представьтесь — и попадёте в своё рабочее пространство.
+      В следующий раз это же имя вернёт вас туда же.
+    </p>
+
+    <label class="login__label" for="name">Имя</label>
+    <input
+      id="name"
+      class="login__input"
+      type="text"
+      autocomplete="name"
+      placeholder="Например, Кирилл Соколов"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
+      name="name"
+      [attr.aria-invalid]="error() !== null"
+    />
+
+    @if (error(); as message) {
+      <p class="login__error" role="alert">{{ message }}</p>
+    }
+
+    <button class="login__submit" type="submit" [disabled]="busy()">
+      {{ busy() ? 'Открываем…' : 'Войти' }}
+    </button>
+  </form>
+</div>

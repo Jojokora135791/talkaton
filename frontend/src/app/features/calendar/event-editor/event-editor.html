@@ -1,0 +1,182 @@
+<!-- Подложка кнопкой, а не div: щелчок мимо диалога должен работать и с клавиатуры. -->
+<button type="button" class="backdrop" aria-label="Закрыть без сохранения" (click)="cancelled.emit()"></button>
+
+<form class="dialog" (ngSubmit)="submit()" (keydown.escape)="cancelled.emit()">
+  <header class="dialog__header">
+    <h2 class="dialog__title">{{ heading() }}</h2>
+    <button type="button" class="dialog__close" aria-label="Закрыть" (click)="cancelled.emit()">✕</button>
+  </header>
+
+  <div class="dialog__body">
+    <label class="field">
+      <span class="field__label">Тема</span>
+      <input
+        name="title"
+        class="field__input"
+        placeholder="Например, Штаб Платформы Данных"
+        [ngModel]="title()"
+        (ngModelChange)="title.set($event)"
+      />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Календарь</span>
+      <select
+        name="calendar"
+        class="field__input"
+        [ngModel]="calendarId()"
+        (ngModelChange)="calendarId.set($event)"
+      >
+        @for (calendar of calendars(); track calendar.id) {
+          <option [value]="calendar.id">{{ calendar.name }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="field__row">
+      <label class="field">
+        <span class="field__label">Дата</span>
+        <input
+          type="date"
+          name="date"
+          class="field__input"
+          [ngModel]="dateValue()"
+          (ngModelChange)="dateValue.set($event)"
+        />
+      </label>
+
+      @if (!isAllDay()) {
+        <label class="field field--narrow">
+          <span class="field__label">Начало</span>
+          <input
+            type="time"
+            name="startTime"
+            class="field__input"
+            [ngModel]="startTime()"
+            (ngModelChange)="startTime.set($event)"
+          />
+        </label>
+
+        <label class="field field--narrow">
+          <span class="field__label">Конец</span>
+          <input
+            type="time"
+            name="endTime"
+            class="field__input"
+            [ngModel]="endTime()"
+            (ngModelChange)="endTime.set($event)"
+          />
+        </label>
+      }
+    </div>
+
+    <label class="checkbox">
+      <input
+        type="checkbox"
+        name="allDay"
+        [ngModel]="isAllDay()"
+        (ngModelChange)="isAllDay.set($event)"
+      />
+      Весь день
+    </label>
+
+    <div class="field__row">
+      <label class="field">
+        <span class="field__label">Повторение</span>
+        <select
+          name="recurrence"
+          class="field__input"
+          [ngModel]="recurrence()"
+          (ngModelChange)="recurrence.set($event)"
+        >
+          @for (option of recurrenceChoices(); track option.label) {
+            <option [ngValue]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="field__label">Напоминание</span>
+        <select
+          name="reminder"
+          class="field__input"
+          [ngModel]="reminder()"
+          (ngModelChange)="reminder.set(+$event)"
+        >
+          @for (minutes of reminderChoices; track minutes) {
+            <option [value]="minutes">{{ reminderLabel(minutes) }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <label class="field">
+      <span class="field__label">Комната в Толке</span>
+      <input
+        name="room"
+        class="field__input"
+        placeholder="pdata-hq — хвост ссылки talk.kontur.ru/c/…"
+        [ngModel]="talkRoomSlug()"
+        (ngModelChange)="talkRoomSlug.set($event)"
+      />
+    </label>
+
+    <div class="field">
+      <span class="field__label">Участники</span>
+
+      @if (participantLists().length > 0) {
+        <div class="lists">
+          @for (list of participantLists(); track list.id) {
+            <button type="button" class="lists__button" (click)="addList(list)">
+              + {{ list.name }}
+            </button>
+          }
+        </div>
+      }
+
+      <ul class="people">
+        @for (person of people(); track person.id) {
+          <li>
+            <label class="people__row">
+              <input
+                type="checkbox"
+                [checked]="isChosen(person.id)"
+                (change)="toggleParticipant(person.id)"
+              />
+              <span
+                class="people__avatar"
+                [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'"
+                aria-hidden="true"
+              >
+                {{ person.displayName.charAt(0) }}
+              </span>
+              {{ person.displayName }}
+            </label>
+          </li>
+        } @empty {
+          <li class="people__empty">Кроме вас пока никого нет</li>
+        }
+      </ul>
+    </div>
+
+    <label class="field">
+      <span class="field__label">Описание</span>
+      <textarea
+        name="description"
+        class="field__input field__input--area"
+        rows="3"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"
+      ></textarea>
+    </label>
+
+    @if (validationError(); as message) {
+      <p class="dialog__error" role="alert">{{ message }}</p>
+    }
+  </div>
+
+  <footer class="dialog__footer">
+    <button type="button" class="dialog__cancel" (click)="cancelled.emit()">Отмена</button>
+    <button type="submit" class="dialog__save">Сохранить</button>
+  </footer>
+</form>

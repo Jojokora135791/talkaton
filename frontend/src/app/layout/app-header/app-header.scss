@@ -17,21 +17,62 @@
     gap: var(--tk-space-1);
   }
 
-  &__call {
+  &__right {
     display: flex;
     align-items: center;
     gap: var(--tk-space-2);
     margin-left: auto;
+  }
+
+  &__ghost {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
     padding: var(--tk-space-2) var(--tk-space-3);
     background: transparent;
     border: none;
     border-radius: var(--tk-radius-md);
     color: var(--tk-text-primary);
     font-size: var(--tk-font-size-md);
+    white-space: nowrap;
 
     &:hover {
       background: var(--tk-surface-hover);
     }
+  }
+
+  &__icon {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: var(--tk-space-2);
+    padding: var(--tk-space-1) var(--tk-space-2) var(--tk-space-1) var(--tk-space-1);
+    background: transparent;
+    border: 1px solid var(--tk-border);
+    border-radius: 999px;
+    color: var(--tk-text-secondary);
+    font-size: var(--tk-font-size-md);
+
+    &:hover {
+      background: var(--tk-surface-hover);
+      color: var(--tk-text-primary);
+    }
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--tk-accent-contrast);
+    font-size: 11px;
+    font-weight: 700;
   }
 }
 
@@ -69,5 +110,49 @@
     font-size: 11px;
     line-height: 16px;
     text-align: center;
+  }
+
+  &__icon svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .header__action-label,
+  .header__user-name {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .header {
+    gap: var(--tk-space-2);
+    padding-inline: var(--tk-space-2);
+
+    &__brand {
+      font-size: 13px;
+    }
+
+    &__tabs {
+      min-width: 0;
+      overflow: hidden;
+    }
+  }
+
+  .tab {
+    padding-inline: var(--tk-space-2);
+
+    &__label,
+    &__badge {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 520px) {
+  .tab:not(.tab--active) {
+    display: none;
   }
 }

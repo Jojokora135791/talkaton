@@ -1,0 +1,76 @@
+<button type="button" class="backdrop" aria-label="Закрыть без сохранения" (click)="cancelled.emit()"></button>
+
+<form class="dialog" role="dialog" aria-modal="true" aria-labelledby="participant-list-title" (ngSubmit)="submit()" (keydown.escape)="cancelled.emit()">
+  <header class="dialog__header">
+    <div>
+      <p class="dialog__eyebrow">Быстрое приглашение на встречи</p>
+      <h2 class="dialog__title" id="participant-list-title">Новый список участников</h2>
+    </div>
+    <button type="button" class="dialog__close" aria-label="Закрыть" (click)="cancelled.emit()">✕</button>
+  </header>
+
+  <div class="dialog__body">
+    <label class="field">
+      <span class="field__label">Название списка</span>
+      <input
+        class="field__input"
+        name="name"
+        maxlength="200"
+        autocomplete="off"
+        placeholder="Например, Дизайн-ревью"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event); validationError.set(null)"
+      />
+    </label>
+
+    <label class="field">
+      <span class="field__label">Участники</span>
+      <span class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-4-4" />
+        </svg>
+        <input
+          type="search"
+          name="query"
+          autocomplete="off"
+          placeholder="Поиск по имени"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+        />
+      </span>
+    </label>
+
+    <ul class="people">
+      @for (person of visiblePeople(); track person.id) {
+        <li>
+          <label class="person" [class.person--chosen]="isChosen(person.id)">
+            <input type="checkbox" [checked]="isChosen(person.id)" (change)="toggle(person.id)" />
+            <span class="person__avatar" [style.background]="'var(--tk-avatar-' + person.avatarColorIndex + ')'" aria-hidden="true">
+              {{ initials(person.displayName) }}
+            </span>
+            <span class="person__body">
+              <span class="person__name">{{ person.displayName }}</span>
+              <span class="person__meta">{{ person.timeZoneId }}</span>
+            </span>
+            <span class="person__check" aria-hidden="true">✓</span>
+          </label>
+        </li>
+      } @empty {
+        <li class="people__empty">Никого не найдено</li>
+      }
+    </ul>
+
+    @if (validationError() || serverError(); as message) {
+      <p class="dialog__error" role="alert">{{ message }}</p>
+    }
+  </div>
+
+  <footer class="dialog__footer">
+    <span class="dialog__count">Выбрано: {{ chosen().size }}</span>
+    <button type="button" class="dialog__cancel" [disabled]="saving()" (click)="cancelled.emit()">Отмена</button>
+    <button type="submit" class="dialog__save" [disabled]="saving()">
+      {{ saving() ? 'Создаём…' : 'Создать список' }}
+    </button>
+  </footer>
+</form>

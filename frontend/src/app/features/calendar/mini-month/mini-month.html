@@ -1,0 +1,34 @@
+<div class="mini">
+  <div class="mini__header">
+    <span class="mini__title">{{ title() }}</span>
+    <button type="button" class="mini__nav" aria-label="Предыдущий месяц" (click)="step(-1)">‹</button>
+    <button type="button" class="mini__nav" aria-label="Следующий месяц" (click)="step(1)">›</button>
+  </div>
+
+  <div class="mini__weekdays">
+    @for (weekday of weekdays(); track weekday) {
+      <span>{{ weekday }}</span>
+    }
+  </div>
+
+  @for (week of weeks(); track $index) {
+    <div class="mini__week">
+      @for (day of week; track day.key) {
+        <button
+          type="button"
+          class="mini__day"
+          [class.mini__day--muted]="!day.inMonth"
+          [class.mini__day--today]="day.today"
+          [class.mini__day--selected]="isSelected(day.date)"
+          [attr.aria-current]="day.today ? 'date' : null"
+          (click)="daySelected.emit(day.date)"
+        >
+          {{ day.label }}
+          @if (busyDays().has(day.key)) {
+            <span class="mini__dot" aria-hidden="true"></span>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>
