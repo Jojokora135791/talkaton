@@ -150,6 +150,46 @@ RESTART_POLICY=unless-stopped       # стенд переживает перез
 ⚠️ Аутентификации в приложении нет до этапа 6: вход по имени, дальше GUID
 в заголовке. Публичный стенд открыт любому, кто угадает имя.
 
+### Автоматическая выкатка
+
+Задание `deploy` в CI срабатывает на push в `main` и только после зелёных
+`backend`, `frontend` и `compose` — сломанный коммит на стенд не попадёт.
+Оно подключается по SSH к пользователю `deploy` и ничего ему не передаёт:
+что запускать, решает сервер. Ключ в `~deploy/.ssh/authorized_keys` ограничен
+принудительной командой, оболочки у него нет:
+
+```
+command="/usr/local/bin/talkaton-deploy.sh",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty ssh-ed25519 AAAA... github-deploy
+```
+
+Сам скрипт лежит **вне** рабочей копии намеренно: он делает `git reset --hard`
+в `/opt/talkaton`, а bash дочитывает скрипт по ходу выполнения — файл под
+контролем git переписался бы прямо во время работы.
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+BRANCH="${TALKATON_BRANCH:-main}"
+cd /opt/talkaton
+git fetch --prune origin
+git checkout -B "$BRANCH" "origin/$BRANCH"
+git reset --hard "origin/$BRANCH"
+docker compose up -d --build --wait
+docker image prune -f
+```
+
+Секретов нужно два — **Settings → Secrets and variables → Actions**:
+
+| Секрет | Откуда взять |
+| ------ | ------------ |
+| `DEPLOY_SSH_KEY` | приватный ключ пары, публичная половина которой лежит в `authorized_keys` |
+| `DEPLOY_KNOWN_HOSTS` | вывод `ssh-keyscan -p 44 -H talkaton.duckdns.org` целиком |
+
+Порт и пользователь заданы в самом задании: они не секрет.
+
+Откат сломанной выкатки — на сервере `git reset --hard <коммит>` и
+`docker compose up -d --build --wait`, в репозитории `git revert`.
+
 ## Проверки
 
 ```bash

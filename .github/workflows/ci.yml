@@ -96,3 +96,33 @@ jobs:
       - name: Остановить
         if: always()
         run: docker compose down -v
+
+  deploy:
+    name: Выкатить на стенд
+    # Гейт: на стенд едет только то, что прошло все три проверки выше.
+    needs: [backend, frontend, compose]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Две выкатки разом затопчут друг друга на одном docker compose.
+    concurrency:
+      group: deploy-stand
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://talkaton.duckdns.org
+    steps:
+      - name: Ключ и отпечаток хоста
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      # Что запускать, решает сервер: ключ ограничен принудительной командой
+      # в authorized_keys, отдельной оболочки у него нет.
+      - name: Выкатка
+        run: ssh -o BatchMode=yes -p 44 -i ~/.ssh/deploy_key deploy@talkaton.duckdns.org
+
+      - name: Стенд отвечает
+        run: curl --fail --silent --show-error https://talkaton.duckdns.org/api/health
