@@ -1,19 +1,24 @@
+# Порты, окружение и политика перезапуска вынесены в переменные: локально работают
+# значения по умолчанию, а на сервере их перекрывает .env рядом с этим файлом.
+# Привязка к 127.0.0.1 — единственный способ убрать порт из внешнего доступа:
+# опубликованные Docker'ом порты идут мимо цепочки INPUT, и ufw их не фильтрует.
 services:
   api:
     build:
       context: ./backend
     container_name: talkaton-api
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       # Файл базы живёт в томе: пересборка образа не стирает наработанные встречи.
       ConnectionStrings__Sqlite: "Data Source=/data/talkaton.db"
       # Фронт в compose ходит через nginx, но оставляем CORS для случая «ng serve + api из compose».
       Cors__AllowedOrigins__0: "http://localhost:4200"
-      Cors__AllowedOrigins__1: "http://localhost:8080"
+      Cors__AllowedOrigins__1: "http://localhost:${WEB_PORT:-8080}"
     ports:
-      - "5080:8080"
+      - "${API_BIND:-0.0.0.0}:${API_PORT:-5080}:8080"
     volumes:
       - sqlite-data:/data
+    restart: ${RESTART_POLICY:-no}
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
       interval: 10s
@@ -26,7 +31,8 @@ services:
       context: ./frontend
     container_name: talkaton-web
     ports:
-      - "8080:80"
+      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80"
+    restart: ${RESTART_POLICY:-no}
     depends_on:
       api:
         condition: service_healthy
