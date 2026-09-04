@@ -100,6 +100,7 @@ export interface UpdateEventRequest {
   talkRoomSlug?: string | null;
   participantIds?: string[];
   reminderMinutesBefore?: number;
+  generateArtifacts?: boolean;
 }
 
 /** К чему относится правка: ко всей серии или к одному вхождению. */

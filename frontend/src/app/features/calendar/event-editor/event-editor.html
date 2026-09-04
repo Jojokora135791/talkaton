@@ -132,6 +132,7 @@
         <input
           type="checkbox"
           class="toggle-switch"
+          name="tolkVideo"
           [ngModel]="tolkVideo()"
           (ngModelChange)="toggleTolkVideo($event)"
         />
@@ -141,6 +142,7 @@
         <input
           type="checkbox"
           class="toggle-switch"
+          name="recordAndAi"
           [ngModel]="recordAndAi()"
           (ngModelChange)="recordAndAi.set($event)"
         />
@@ -150,6 +152,7 @@
         <input
           type="checkbox"
           class="toggle-switch"
+          name="repeatWeekly"
           [ngModel]="repeatWeekly()"
           (ngModelChange)="toggleRepeatWeekly($event)"
         />

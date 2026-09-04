@@ -77,7 +77,8 @@ public record UpdateEventRequest(
     bool? ClearRecurrence,
     string? TalkRoomSlug,
     Guid[]? ParticipantIds,
-    int? ReminderMinutesBefore);
+    int? ReminderMinutesBefore,
+    bool? GenerateArtifacts = null);
 
 public record RsvpRequest(string Status);
 

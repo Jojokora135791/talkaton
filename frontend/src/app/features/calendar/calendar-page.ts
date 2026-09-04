@@ -230,6 +230,7 @@ export class CalendarPage {
       talkRoomSlug: '',
       participantIds: [],
       reminderMinutesBefore: 10,
+      hasArtifacts: false,
     });
   }
 
@@ -253,6 +254,7 @@ export class CalendarPage {
       talkRoomSlug: occurrence.talkRoomSlug ?? '',
       participantIds: details.participants.filter((x) => !x.isOrganizer).map((x) => x.userId),
       reminderMinutesBefore: occurrence.reminderMinutesBefore ?? 10,
+      hasArtifacts: occurrence.artifactCount > 0,
     });
   }
 
@@ -294,6 +296,7 @@ export class CalendarPage {
           talkRoomSlug: draft.talkRoomSlug,
           participantIds: draft.participantIds,
           reminderMinutesBefore: draft.reminderMinutesBefore,
+          generateArtifacts: draft.generateArtifacts,
         },
         'series',
       );

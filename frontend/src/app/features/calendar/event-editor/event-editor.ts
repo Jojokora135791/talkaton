@@ -39,9 +39,27 @@ export interface EventEditorSeed {
   talkRoomSlug: string;
   participantIds: string[];
   reminderMinutesBefore: number;
+  /** Есть ли у встречи запись/протокол — тумблер «Запись + ИИ-протокол» при правке. */
+  hasArtifacts: boolean;
 }
 
 const REMINDER_CHOICES = [0, 5, 10, 15, 30];
+
+/** Календарь → цветовая точка палитры. Обратное к COLOR_TO_CALENDAR. */
+const CALENDAR_TO_COLOR: readonly (readonly [string, string])[] = [
+  ['рождения', 'rose'],
+  ['личное', 'teal'],
+  ['задачи', 'amber'],
+  ['рабочие', 'blue'],
+];
+
+/** Цветовая точка → календарь: клик по цвету переключает календарь встречи. */
+const COLOR_TO_CALENDAR: Record<string, string> = {
+  blue: 'рабочие',
+  teal: 'личное',
+  rose: 'рождения',
+  amber: 'задачи',
+};
 
 /** Диалог «Создать встречу» и правки существующей. */
 @Component({
@@ -75,10 +93,20 @@ export class EventEditor {
   protected readonly reminder = linkedSignal(() => this.seed().reminderMinutesBefore);
   protected readonly participants = linkedSignal(() => new Set(this.seed().participantIds));
 
-  protected readonly selectedColor = signal<string>('blue');
-  protected readonly tolkVideo = signal<boolean>(true);
-  protected readonly recordAndAi = signal<boolean>(true);
-  protected readonly repeatWeekly = signal<boolean>(false);
+  // Тумблеры и палитра тоже читаются из seed: при правке они должны показывать
+  // состояние самой встречи, а не дефолты формы создания.
+  protected readonly selectedColor = linkedSignal(() => {
+    const calendar = this.calendars().find((c) => c.id === this.seed().calendarId);
+    const name = calendar?.name.toLowerCase() ?? '';
+    return CALENDAR_TO_COLOR.find(([needle]) => name.includes(needle))?.[1] ?? 'blue';
+  });
+  protected readonly tolkVideo = linkedSignal(() =>
+    this.seed().mode === 'create' ? true : this.seed().talkRoomSlug.trim().length > 0,
+  );
+  protected readonly recordAndAi = linkedSignal(() =>
+    this.seed().mode === 'create' ? true : this.seed().hasArtifacts,
+  );
+  protected readonly repeatWeekly = linkedSignal(() => this.seed().recurrenceRule !== null);
 
   protected readonly validationError = signal<string | null>(null);
 
@@ -127,13 +155,7 @@ export class EventEditor {
   protected selectColor(color: string): void {
     this.selectedColor.set(color);
     // Синхронизируем календарь при клике на цвет
-    const colorMap: Record<string, string> = {
-      blue: 'рабочие',
-      teal: 'личное',
-      rose: 'рождения',
-      amber: 'задачи',
-    };
-    const needle = colorMap[color];
+    const needle = COLOR_TO_CALENDAR[color];
     if (needle) {
       const cal = this.calendars().find((c) => c.name.toLowerCase().includes(needle));
       if (cal) {

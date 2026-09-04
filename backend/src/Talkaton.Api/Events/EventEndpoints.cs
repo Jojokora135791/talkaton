@@ -237,24 +237,7 @@ public static class EventEndpoints
 
         if (request.GenerateArtifacts == true)
         {
-            meeting.Artifacts.Add(new EventArtifact
-            {
-                Id = Guid.NewGuid(),
-                EventId = meeting.Id,
-                Kind = ArtifactKind.Recording,
-                Title = "Запись встречи",
-                Subtitle = "Автозапись Толк",
-                SortOrder = 0,
-            });
-            meeting.Artifacts.Add(new EventArtifact
-            {
-                Id = Guid.NewGuid(),
-                EventId = meeting.Id,
-                Kind = ArtifactKind.Protocol,
-                Title = "Протокол совещания",
-                Subtitle = "ИИ-конспект формируется",
-                SortOrder = 1,
-            });
+            SeedArtifacts(meeting);
         }
 
         db.Events.Add(meeting);
@@ -287,6 +270,7 @@ public static class EventEndpoints
         {
             CalendarId: null, Title: null, Description: null, StartUtc: null, EndUtc: null,
             IsAllDay: null, RecurrenceRule: null, ClearRecurrence: null, TalkRoomSlug: null, ParticipantIds: null,
+            GenerateArtifacts: null,
         };
 
         // Участник встречи может настроить себе напоминание, но не переписать чужую встречу.
@@ -301,6 +285,11 @@ public static class EventEndpoints
         if (request.ReminderMinutesBefore is { } minutes)
         {
             UpsertReminder(db, source, viewer.Id, NormalizeReminder(minutes));
+        }
+
+        if (request.GenerateArtifacts == true)
+        {
+            SeedArtifacts(source, db);
         }
 
         var effectiveScope = ParseScope(scope);
@@ -339,6 +328,7 @@ public static class EventEndpoints
         {
             CalendarId: null, Title: null, Description: null, IsAllDay: null,
             RecurrenceRule: null, ClearRecurrence: null, TalkRoomSlug: null, ParticipantIds: null,
+            GenerateArtifacts: null,
         };
 
         if (!onlyTimeChanged)
@@ -569,6 +559,60 @@ public static class EventEndpoints
     /// Встречи, которые человек имеет право видеть: свои календари плюс всё,
     /// куда его позвали. Единственное место, где задаётся эта граница.
     /// </summary>
+    /// <summary>
+    /// Тумблер «Запись + ИИ-протокол»: заводит запись и протокол встречи. Повторный вызов
+    /// ничего не делает — артефакты уже есть, а снятие тумблера их не удаляет: запись
+    /// прошедшей встречи не должна пропадать от правки карточки.
+    /// </summary>
+    /// <param name="db">
+    /// Нужен для правки уже сохранённой встречи: Id у артефакта проставлен заранее, и в графе
+    /// изменений EF принял бы строку, положенную только в навигацию, за правку существующей —
+    /// ровно та же ловушка, что и в <see cref="EnsureOverride"/>. Добавляем через DbSet,
+    /// в <c>meeting.Artifacts</c> строку положит фиксап связей. При создании встречи весь граф
+    /// и так уходит в Added, поэтому там контекст не нужен.
+    /// </param>
+    private static void SeedArtifacts(Event meeting, TalkatonDbContext? db = null)
+    {
+        if (meeting.Artifacts.Count > 0)
+        {
+            return;
+        }
+
+        var seeded = new[]
+        {
+            new EventArtifact
+            {
+                Id = Guid.NewGuid(),
+                EventId = meeting.Id,
+                Kind = ArtifactKind.Recording,
+                Title = "Запись встречи",
+                Subtitle = "Автозапись Толк",
+                SortOrder = 0,
+            },
+            new EventArtifact
+            {
+                Id = Guid.NewGuid(),
+                EventId = meeting.Id,
+                Kind = ArtifactKind.Protocol,
+                Title = "Протокол совещания",
+                Subtitle = "ИИ-конспект формируется",
+                SortOrder = 1,
+            },
+        };
+
+        if (db is null)
+        {
+            foreach (var artifact in seeded)
+            {
+                meeting.Artifacts.Add(artifact);
+            }
+
+            return;
+        }
+
+        db.EventArtifacts.AddRange(seeded);
+    }
+
     private static IQueryable<Event> Visible(TalkatonDbContext db, Guid viewerId) => db.Events
         .Include(x => x.Calendar)
         .Include(x => x.Organizer)

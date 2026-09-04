@@ -287,6 +287,32 @@ public class EventApiTests(TalkatonApiFactory factory) : IClassFixture<TalkatonA
     }
 
     [Fact]
+    public async Task Тумблер_записи_заводит_артефакты_и_при_создании_и_при_правке()
+    {
+        var client = await factory.SignInAsync("Включает Протокол");
+        var calendar = await FirstCalendarAsync(client);
+        var start = DateTime.UtcNow.Date.AddDays(1).AddHours(11);
+
+        var created = await CreateAsync(client, calendar.Id, "Без записи", start, start.AddHours(1));
+        var eventId = created.Occurrence.EventId;
+
+        var before = await client.GetFromJsonAsync<List<ArtifactDto>>($"/api/events/{eventId}/artifacts");
+        Assert.Empty(before!);
+
+        var response = await client.PatchAsJsonAsync($"/api/events/{eventId}", new { generateArtifacts = true });
+        response.EnsureSuccessStatusCode();
+
+        var after = await client.GetFromJsonAsync<List<ArtifactDto>>($"/api/events/{eventId}/artifacts");
+        Assert.Equal(new[] { "recording", "protocol" }, after!.Select(x => x.Kind));
+
+        // Повторное включение не плодит дубли.
+        (await client.PatchAsJsonAsync($"/api/events/{eventId}", new { generateArtifacts = true }))
+            .EnsureSuccessStatusCode();
+        var again = await client.GetFromJsonAsync<List<ArtifactDto>>($"/api/events/{eventId}/artifacts");
+        Assert.Equal(2, again!.Count);
+    }
+
+    [Fact]
     public async Task Слишком_широкий_период_отклоняется()
     {
         var client = await factory.SignInAsync("Просит Век");
