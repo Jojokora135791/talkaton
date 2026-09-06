@@ -15,6 +15,16 @@ public class Event
     public Guid OrganizerId { get; set; }
     public User? Organizer { get; set; }
 
+    /// <summary>
+    /// Кто фактически завёл встречу (Этап 7.6) — обычно совпадает с <see cref="OrganizerId"/>,
+    /// но при делегировании встречу создаёт помощник от имени руководителя: организатор —
+    /// руководитель, а здесь остаётся правда о том, чьими руками это сделано.
+    /// Пусто только у встреч, заведённых до появления этой колонки — читать как «совпадает
+    /// с организатором».
+    /// </summary>
+    public Guid? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
     public required string Title { get; set; }
     public string? Description { get; set; }
 

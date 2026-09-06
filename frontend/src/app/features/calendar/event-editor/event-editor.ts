@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Calendar, ParticipantList, Room, User } from '../../../core/api/models';
+import { Calendar, DelegationPerson, ParticipantList, Room, User } from '../../../core/api/models';
 import {
   addMinutes,
   fromDateTimeInputs,
@@ -25,6 +25,8 @@ export interface EventDraft {
   reminderMinutesBefore: number;
   generateArtifacts?: boolean;
   roomId: string | null;
+  /** От чьего имени создаём (Этап 7.6) — null значит «от своего»; применимо только при создании. */
+  onBehalfOfUserId: string | null;
 }
 
 /** Начальное состояние формы: либо пустая встреча на выбранный слот, либо существующая. */
@@ -84,6 +86,8 @@ export class EventEditor {
   readonly people = input.required<readonly User[]>();
   readonly participantLists = input.required<readonly ParticipantList[]>();
   readonly rooms = input.required<readonly Room[]>();
+  /** Этап 7.6: от чьего имени можно создавать встречи — те, кто выдал делегирование. */
+  readonly grantedToMe = input<readonly DelegationPerson[]>([]);
 
   readonly saved = output<EventDraft>();
   readonly cancelled = output<void>();
@@ -103,6 +107,7 @@ export class EventEditor {
   protected readonly reminder = linkedSignal(() => this.seed().reminderMinutesBefore);
   protected readonly participants = linkedSignal(() => new Set(this.seed().participantIds));
   protected readonly roomId = linkedSignal(() => this.seed().roomId);
+  protected readonly onBehalfOfUserId = linkedSignal<string | null>(() => null);
 
   // Тумблеры и палитра тоже читаются из seed: при правке они должны показывать
   // состояние самой встречи, а не дефолты формы создания.
@@ -260,6 +265,7 @@ export class EventEditor {
       reminderMinutesBefore: this.reminder(),
       generateArtifacts: this.recordAndAi(),
       roomId: this.roomId(),
+      onBehalfOfUserId: this.onBehalfOfUserId(),
     });
   }
 }

@@ -43,6 +43,8 @@ export interface Occurrence {
   reminderMinutesBefore: number | null;
   roomId: string | null;
   roomName: string | null;
+  createdByUserId: string;
+  createdByName: string;
 }
 
 export interface Participant {
@@ -89,6 +91,7 @@ export interface CreateEventRequest {
   reminderMinutesBefore?: number | null;
   generateArtifacts?: boolean;
   roomId?: string | null;
+  onBehalfOfUserId?: string | null;
 }
 
 export interface UpdateEventRequest {
@@ -106,6 +109,12 @@ export interface UpdateEventRequest {
   generateArtifacts?: boolean;
   roomId?: string | null;
   clearRoom?: boolean;
+}
+
+/** Одна сторона делегирования (Этап 7.6) — владелец или делегат, смотря какой список. */
+export interface DelegationPerson {
+  userId: string;
+  displayName: string;
 }
 
 /** Переговорка (Этап 7.2) — общий ресурс для выбора при создании встречи. */

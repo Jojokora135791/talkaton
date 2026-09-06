@@ -135,6 +135,15 @@
   </ul>
 </section>
 
+<section class="section">
+  <div class="section-title">
+    <h2>Делегирование</h2>
+  </div>
+  <button type="button" class="delegation-open" (click)="delegationRequested.emit()">
+    Кто управляет моим календарём
+  </button>
+</section>
+
 <footer class="version" title="Версия интерфейса на стенде">
   Толкатрон <span class="version__number">{{ version }}</span>
 </footer>

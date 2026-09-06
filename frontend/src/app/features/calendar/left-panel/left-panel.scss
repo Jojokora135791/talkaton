@@ -38,6 +38,22 @@
   }
 }
 
+.delegation-open {
+  width: 100%;
+  padding: var(--tk-space-2) var(--tk-space-3);
+  background: var(--tk-surface-raised);
+  border: 1px solid var(--tk-border);
+  border-radius: var(--tk-radius-md);
+  color: var(--tk-text-secondary);
+  font-size: var(--tk-font-size-sm);
+  text-align: left;
+
+  &:hover {
+    background: var(--tk-surface-hover);
+    color: var(--tk-text-primary);
+  }
+}
+
 .section-title {
   margin: 0 0 var(--tk-space-3);
   color: var(--tk-text-secondary);

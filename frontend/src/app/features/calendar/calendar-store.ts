@@ -5,6 +5,7 @@ import { TalkatonApi } from '../../core/api/talkaton-api';
 import {
   Calendar,
   CreateEventRequest,
+  DelegationPerson,
   EditScope,
   EventDetails,
   Occurrence,
@@ -58,6 +59,10 @@ export class CalendarStore {
   private readonly calendarsState = signal<Calendar[]>([]);
   private readonly participantListsState = signal<ParticipantList[]>([]);
   private readonly roomsState = signal<Room[]>([]);
+  private readonly myDelegatesState = signal<DelegationPerson[]>([]);
+  private readonly grantedToMeState = signal<DelegationPerson[]>([]);
+  private readonly delegationSavingState = signal(false);
+  private readonly delegationErrorState = signal<string | null>(null);
   private readonly occurrencesState = signal<Occurrence[]>([]);
   private readonly selectedState = signal<OccurrenceKey | null>(null);
   private readonly detailsState = signal<EventDetails | null>(null);
@@ -75,6 +80,10 @@ export class CalendarStore {
   readonly calendars = this.calendarsState.asReadonly();
   readonly participantLists = this.participantListsState.asReadonly();
   readonly rooms = this.roomsState.asReadonly();
+  readonly myDelegates = this.myDelegatesState.asReadonly();
+  readonly grantedToMe = this.grantedToMeState.asReadonly();
+  readonly delegationSaving = this.delegationSavingState.asReadonly();
+  readonly delegationError = this.delegationErrorState.asReadonly();
   readonly selected = this.selectedState.asReadonly();
   readonly details = this.detailsState.asReadonly();
   readonly search = this.searchState.asReadonly();
@@ -169,7 +178,58 @@ export class CalendarStore {
         error: () => this.errorState.set('Не удалось загрузить список переговорок'),
       });
 
+    this.loadDelegations();
     this.refresh();
+  }
+
+  loadDelegations(): void {
+    this.api
+      .myDelegates()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (people) => this.myDelegatesState.set(people) });
+
+    this.api
+      .grantedToMe()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (people) => this.grantedToMeState.set(people) });
+  }
+
+  grantDelegation(delegateUserId: string): void {
+    this.delegationSavingState.set(true);
+    this.delegationErrorState.set(null);
+
+    this.api
+      .grantDelegation(delegateUserId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.delegationSavingState.set(false);
+          this.loadDelegations();
+        },
+        error: () => {
+          this.delegationSavingState.set(false);
+          this.delegationErrorState.set('Не удалось выдать право — попробуйте ещё раз');
+        },
+      });
+  }
+
+  revokeDelegation(delegateUserId: string): void {
+    this.delegationSavingState.set(true);
+    this.delegationErrorState.set(null);
+
+    this.api
+      .revokeDelegation(delegateUserId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.delegationSavingState.set(false);
+          this.loadDelegations();
+        },
+        error: () => {
+          this.delegationSavingState.set(false);
+          this.delegationErrorState.set('Не удалось забрать право — попробуйте ещё раз');
+        },
+      });
   }
 
   refresh(): void {

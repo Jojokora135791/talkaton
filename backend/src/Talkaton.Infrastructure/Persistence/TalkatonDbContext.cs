@@ -29,6 +29,7 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
     public DbSet<ParticipantListMember> ParticipantListMembers => Set<ParticipantListMember>();
     public DbSet<ExternalAccount> ExternalAccounts => Set<ExternalAccount>();
     public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<Delegation> Delegations => Set<Delegation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -88,6 +89,13 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
                 .OnDelete(DeleteBehavior.Restrict);
 
             meeting.HasIndex(x => new { x.RoomId, x.StartUtc });
+
+            // Фактический автор — только для аудита, никогда не удаляем встречу каскадом
+            // из-за него (это не то же самое, что владелец/организатор).
+            meeting.HasOne(x => x.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(x => x.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<EventParticipant>(participant =>
@@ -209,6 +217,25 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
             room.ToTable("rooms");
             room.HasKey(x => x.Id);
             room.Property(x => x.Name).HasMaxLength(200).IsRequired();
+        });
+
+        modelBuilder.Entity<Delegation>(delegation =>
+        {
+            delegation.ToTable("delegations");
+            delegation.HasKey(x => x.Id);
+
+            delegation.HasOne(x => x.Owner)
+                .WithMany()
+                .HasForeignKey(x => x.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            delegation.HasOne(x => x.Delegate)
+                .WithMany()
+                .HasForeignKey(x => x.DelegateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Одно и то же право не выдаём дважды — идемпотентный grant проверяет по этому индексу.
+            delegation.HasIndex(x => new { x.OwnerId, x.DelegateId }).IsUnique();
         });
 
         ApplyUtcConverters(modelBuilder);

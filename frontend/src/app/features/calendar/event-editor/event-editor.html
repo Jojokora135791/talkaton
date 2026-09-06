@@ -8,6 +8,23 @@
   </header>
 
   <div class="dialog__body">
+    @if (seed().mode === 'create' && grantedToMe().length > 0) {
+      <label class="field">
+        <span class="field__label">От имени</span>
+        <select
+          name="onBehalfOf"
+          class="field__input"
+          [ngModel]="onBehalfOfUserId()"
+          (ngModelChange)="onBehalfOfUserId.set($event)"
+        >
+          <option [ngValue]="null">Себя</option>
+          @for (person of grantedToMe(); track person.userId) {
+            <option [ngValue]="person.userId">{{ person.displayName }}</option>
+          }
+        </select>
+      </label>
+    }
+
     <label class="field">
       <span class="field__label">Тема</span>
       <input

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Talkaton.Api.Availability;
 using Talkaton.Api.Calendars;
 using Talkaton.Api.Common;
+using Talkaton.Api.Delegations;
 using Talkaton.Api.Events;
 using Talkaton.Api.Health;
 using Talkaton.Api.ParticipantLists;
@@ -53,6 +54,7 @@ app.MapUserEndpoints();
 app.MapParticipantListEndpoints();
 app.MapAvailabilityEndpoints();
 app.MapRoomEndpoints();
+app.MapDelegationEndpoints();
 
 app.Run();
 

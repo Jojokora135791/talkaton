@@ -20,6 +20,7 @@ import {
   ParticipantListDraft,
   ParticipantListEditor,
 } from './participant-list-editor/participant-list-editor';
+import { DelegationManager } from './delegation-manager/delegation-manager';
 import { TalkatonApi } from '../../core/api/talkaton-api';
 import { ReminderService } from '../reminders/reminder.service';
 import { Calendar, EditScope, Health, Occurrence, ParticipantList, ParticipantStatus, User } from '../../core/api/models';
@@ -46,6 +47,7 @@ const DEFAULT_START_HOUR = 10;
     EventDetailsPanel,
     EventEditor,
     ParticipantListEditor,
+    DelegationManager,
   ],
   providers: [CalendarStore],
   templateUrl: './calendar-page.html',
@@ -65,6 +67,7 @@ export class CalendarPage {
   protected readonly listEditorOpen = signal(false);
   protected readonly listSaving = signal(false);
   protected readonly listError = signal<string | null>(null);
+  protected readonly delegationManagerOpen = signal(false);
 
   /** Дни для сетки: один для вида «День», семь для недели, сорок два для месяца. */
   protected readonly days = computed(() => {
@@ -156,6 +159,24 @@ export class CalendarPage {
           this.listError.set('Не удалось создать список. Проверьте соединение и попробуйте ещё раз.');
         },
       });
+  }
+
+  protected openDelegationManager(): void {
+    this.delegationManagerOpen.set(true);
+  }
+
+  protected closeDelegationManager(): void {
+    if (!this.store.delegationSaving()) {
+      this.delegationManagerOpen.set(false);
+    }
+  }
+
+  protected onDelegationGranted(delegateUserId: string): void {
+    this.store.grantDelegation(delegateUserId);
+  }
+
+  protected onDelegationRevoked(delegateUserId: string): void {
+    this.store.revokeDelegation(delegateUserId);
   }
 
   protected onListDeleted(list: ParticipantList): void {
@@ -282,6 +303,7 @@ export class CalendarPage {
         reminderMinutesBefore: draft.reminderMinutesBefore,
         generateArtifacts: draft.generateArtifacts,
         roomId: draft.roomId,
+        onBehalfOfUserId: draft.onBehalfOfUserId,
       });
     } else if (seed.eventId) {
       this.store.updateEvent(
@@ -329,13 +351,15 @@ export class CalendarPage {
         this.editorSeed.set(null);
       } else if (this.listEditorOpen()) {
         this.closeListEditor();
+      } else if (this.delegationManagerOpen()) {
+        this.closeDelegationManager();
       } else if (this.store.details()) {
         this.store.select(null);
       }
       return;
     }
 
-    if (this.editorSeed() || this.listEditorOpen()) {
+    if (this.editorSeed() || this.listEditorOpen() || this.delegationManagerOpen()) {
       return;
     }
 

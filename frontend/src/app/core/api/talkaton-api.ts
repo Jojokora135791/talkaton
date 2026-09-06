@@ -5,6 +5,7 @@ import {
   Artifact,
   Calendar,
   CreateEventRequest,
+  DelegationPerson,
   EditScope,
   EventDetails,
   Health,
@@ -132,6 +133,24 @@ export class TalkatonApi {
   /** Профиль по id — публичная страница самозаписи (Этап 7.4) знает только userId из ссылки. */
   user(userId: string): Observable<User> {
     return this.http.get<User>(`/api/users/${userId}`);
+  }
+
+  /** Делегирование (Этап 7.6): кому я разрешил управлять моим календарём. */
+  myDelegates(): Observable<DelegationPerson[]> {
+    return this.http.get<DelegationPerson[]>('/api/delegations/my-delegates');
+  }
+
+  /** От чьего имени я могу создавать и править встречи. */
+  grantedToMe(): Observable<DelegationPerson[]> {
+    return this.http.get<DelegationPerson[]>('/api/delegations/granted-to-me');
+  }
+
+  grantDelegation(delegateUserId: string): Observable<DelegationPerson> {
+    return this.http.post<DelegationPerson>('/api/delegations', { delegateUserId });
+  }
+
+  revokeDelegation(delegateUserId: string): Observable<void> {
+    return this.http.delete<void>(`/api/delegations/${delegateUserId}`);
   }
 
   participantLists(): Observable<ParticipantList[]> {

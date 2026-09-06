@@ -32,7 +32,9 @@ public record OccurrenceDto(
     int ArtifactCount,
     int? ReminderMinutesBefore,
     Guid? RoomId,
-    string? RoomName);
+    string? RoomName,
+    Guid CreatedByUserId,
+    string CreatedByName);
 
 public record ParticipantDto(
     Guid UserId,
@@ -62,7 +64,8 @@ public record CreateEventRequest(
     Guid[]? ParticipantIds,
     int? ReminderMinutesBefore,
     bool? GenerateArtifacts = false,
-    Guid? RoomId = null);
+    Guid? RoomId = null,
+    Guid? OnBehalfOfUserId = null);
 
 /// <summary>
 /// Все поля необязательные: drag&amp;drop шлёт только время, редактор — только изменённое.
@@ -123,7 +126,11 @@ public static class EventMapper
             source.Artifacts.Count,
             reminder?.MinutesBefore,
             source.RoomId,
-            source.Room?.Name);
+            source.Room?.Name,
+            source.CreatedByUserId ?? source.OrganizerId,
+            source.CreatedByUserId is null
+                ? source.Organizer?.DisplayName ?? string.Empty
+                : source.CreatedByUser?.DisplayName ?? string.Empty);
     }
 
     public static EventDetailsDto ToDetails(EventOccurrence occurrence, Guid viewerId)

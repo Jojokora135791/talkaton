@@ -29,6 +29,7 @@ export class LeftPanel {
   readonly birthdayScopeChanged = output<BirthdayScope>();
   readonly listDeleted = output<ParticipantList>();
   readonly listClicked = output<ParticipantList>();
+  readonly delegationRequested = output<void>();
 
   protected readonly showBdayPopover = signal(false);
   protected readonly popoverTop = signal(0);
