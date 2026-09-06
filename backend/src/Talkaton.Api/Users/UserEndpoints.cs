@@ -10,6 +10,24 @@ public static class UserEndpoints
 
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGet("/api/users/{id:guid}", async (
+                Guid id,
+                TalkatonDbContext db,
+                CancellationToken ct) =>
+            {
+                var user = await db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+                return user is null
+                    ? Results.NotFound()
+                    : Results.Ok(new UserDto(user.Id, user.DisplayName, user.TimeZoneId, user.AvatarColorIndex));
+            })
+            .AddEndpointFilter<RequireUserFilter>()
+            .WithName("GetUser")
+            .WithTags("Users")
+            .WithSummary("Профиль человека по id — нужен публичной странице самозаписи (Этап 7.4)")
+            .Produces<UserDto>()
+            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
         app.MapGet("/api/users", async (
                 string? query,
                 CurrentUser currentUser,

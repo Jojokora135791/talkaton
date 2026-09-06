@@ -129,6 +129,11 @@ export class TalkatonApi {
     return this.http.get<User[]>('/api/users', { params });
   }
 
+  /** Профиль по id — публичная страница самозаписи (Этап 7.4) знает только userId из ссылки. */
+  user(userId: string): Observable<User> {
+    return this.http.get<User>(`/api/users/${userId}`);
+  }
+
   participantLists(): Observable<ParticipantList[]> {
     return this.http.get<ParticipantList[]>('/api/participant-lists');
   }
