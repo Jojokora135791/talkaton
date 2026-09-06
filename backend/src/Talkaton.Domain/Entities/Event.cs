@@ -36,6 +36,10 @@ public class Event
     /// <summary>Хвост ссылки на комнату Толка: «pdata-hq» из talk.kontur.ru/c/pdata-hq.</summary>
     public string? TalkRoomSlug { get; set; }
 
+    /// <summary>Забронированная переговорка (Этап 7.2) — для очных/гибридных встреч. Необязательна.</summary>
+    public Guid? RoomId { get; set; }
+    public Room? Room { get; set; }
+
     public DateTime CreatedUtc { get; set; }
     public DateTime UpdatedUtc { get; set; }
 

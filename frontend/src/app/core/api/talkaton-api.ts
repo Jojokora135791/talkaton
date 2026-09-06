@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
   Artifact,
   Calendar,
@@ -11,8 +11,11 @@ import {
   Occurrence,
   ParticipantList,
   ParticipantStatus,
+  Room,
+  RoomAvailability,
   UpdateEventRequest,
   User,
+  UserAvailability,
 } from './models';
 
 /**
@@ -94,6 +97,31 @@ export class TalkatonApi {
 
   rsvp(eventId: string, status: ParticipantStatus): Observable<EventDetails> {
     return this.http.post<EventDetails>(`/api/events/${eventId}/rsvp`, { status });
+  }
+
+  /** Грид занятости (Этап 7.1): busy-интервалы каждого из `userIds` за период. */
+  availability(userIds: string[], fromUtc: string, toUtc: string): Observable<UserAvailability[]> {
+    if (userIds.length === 0) {
+      return of([]);
+    }
+
+    const params = new HttpParams().set('userIds', userIds.join(',')).set('from', fromUtc).set('to', toUtc);
+    return this.http.get<UserAvailability[]>('/api/availability', { params });
+  }
+
+  /** Список переговорок (Этап 7.2) для выбора при создании встречи. */
+  rooms(): Observable<Room[]> {
+    return this.http.get<Room[]>('/api/rooms');
+  }
+
+  /** Грид занятости переговорок за период — тот же принцип, что и `availability`. */
+  roomAvailability(roomIds: string[], fromUtc: string, toUtc: string): Observable<RoomAvailability[]> {
+    if (roomIds.length === 0) {
+      return of([]);
+    }
+
+    const params = new HttpParams().set('roomIds', roomIds.join(',')).set('from', fromUtc).set('to', toUtc);
+    return this.http.get<RoomAvailability[]>('/api/rooms/availability', { params });
   }
 
   users(query?: string): Observable<User[]> {

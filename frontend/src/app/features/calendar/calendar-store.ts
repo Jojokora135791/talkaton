@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TalkatonApi } from '../../core/api/talkaton-api';
@@ -9,6 +10,7 @@ import {
   Occurrence,
   ParticipantList,
   ParticipantStatus,
+  Room,
   UpdateEventRequest,
 } from '../../core/api/models';
 import {
@@ -55,6 +57,7 @@ export class CalendarStore {
   private readonly anchorState = signal(startOfDay(new Date()));
   private readonly calendarsState = signal<Calendar[]>([]);
   private readonly participantListsState = signal<ParticipantList[]>([]);
+  private readonly roomsState = signal<Room[]>([]);
   private readonly occurrencesState = signal<Occurrence[]>([]);
   private readonly selectedState = signal<OccurrenceKey | null>(null);
   private readonly detailsState = signal<EventDetails | null>(null);
@@ -71,6 +74,7 @@ export class CalendarStore {
   readonly anchor = this.anchorState.asReadonly();
   readonly calendars = this.calendarsState.asReadonly();
   readonly participantLists = this.participantListsState.asReadonly();
+  readonly rooms = this.roomsState.asReadonly();
   readonly selected = this.selectedState.asReadonly();
   readonly details = this.detailsState.asReadonly();
   readonly search = this.searchState.asReadonly();
@@ -155,6 +159,14 @@ export class CalendarStore {
       .subscribe({
         next: (lists) => this.participantListsState.set(lists),
         error: () => this.errorState.set('Не удалось загрузить списки участников'),
+      });
+
+    this.api
+      .rooms()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (rooms) => this.roomsState.set(rooms),
+        error: () => this.errorState.set('Не удалось загрузить список переговорок'),
       });
 
     this.refresh();
@@ -296,7 +308,7 @@ export class CalendarStore {
           });
           this.refresh();
         },
-        error: () => this.errorState.set('Не удалось создать встречу'),
+        error: (err: HttpErrorResponse) => this.errorState.set(serverDetail(err) ?? 'Не удалось создать встречу'),
       });
   }
 
@@ -309,8 +321,8 @@ export class CalendarStore {
           this.detailsState.set(details);
           this.refresh();
         },
-        error: () => {
-          this.errorState.set('Не удалось сохранить изменения встречи');
+        error: (err: HttpErrorResponse) => {
+          this.errorState.set(serverDetail(err) ?? 'Не удалось сохранить изменения встречи');
           this.refresh();
         },
       });
@@ -406,6 +418,15 @@ export class CalendarStore {
   private patchCalendarLocally(id: string, isVisible: boolean): void {
     this.calendarsState.update((all) => all.map((x) => (x.id === id ? { ...x, isVisible } : x)));
   }
+}
+
+/**
+ * Бэкенд отдаёт человекочитаемую причину отказа как ProblemDetails.detail (например,
+ * «Переговорка занята») — показываем её вместо обезличенного «не удалось сохранить».
+ */
+function serverDetail(err: HttpErrorResponse): string | null {
+  const detail = err.error?.detail;
+  return typeof detail === 'string' && detail.trim().length > 0 ? detail : null;
 }
 
 export function isSameOccurrence(left: Occurrence, right: Occurrence | OccurrenceKey | null): boolean {

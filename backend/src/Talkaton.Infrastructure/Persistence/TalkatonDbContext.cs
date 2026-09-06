@@ -28,6 +28,7 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
     public DbSet<ParticipantList> ParticipantLists => Set<ParticipantList>();
     public DbSet<ParticipantListMember> ParticipantListMembers => Set<ParticipantListMember>();
     public DbSet<ExternalAccount> ExternalAccounts => Set<ExternalAccount>();
+    public DbSet<Room> Rooms => Set<Room>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +79,15 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
 
             // Основной индекс чтения: сетка всегда спрашивает окно по календарю.
             meeting.HasIndex(x => new { x.CalendarId, x.StartUtc });
+
+            // Переговорка — общий ресурс, не персональный: не удаляем комнату каскадом
+            // вместе с чьей-то встречей, наоборот — комнату нельзя удалить, если она занята.
+            meeting.HasOne(x => x.Room)
+                .WithMany(x => x.Events)
+                .HasForeignKey(x => x.RoomId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            meeting.HasIndex(x => new { x.RoomId, x.StartUtc });
         });
 
         modelBuilder.Entity<EventParticipant>(participant =>
@@ -192,6 +202,13 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
                 .OnDelete(DeleteBehavior.Cascade);
 
             account.HasIndex(x => new { x.UserId, x.Provider, x.AccountName }).IsUnique();
+        });
+
+        modelBuilder.Entity<Room>(room =>
+        {
+            room.ToTable("rooms");
+            room.HasKey(x => x.Id);
+            room.Property(x => x.Name).HasMaxLength(200).IsRequired();
         });
 
         ApplyUtcConverters(modelBuilder);

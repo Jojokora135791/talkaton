@@ -186,6 +186,11 @@ public static class EventEndpoints
             return Problem("Неизвестный календарь", "Создавать встречи можно только в своих календарях.");
         }
 
+        if (await ValidateRoomAsync(db, request.RoomId, startUtc, endUtc, excludeEventId: null, ct) is { } roomError)
+        {
+            return roomError;
+        }
+
         string? rrule = null;
         if (!string.IsNullOrWhiteSpace(request.RecurrenceRule))
         {
@@ -210,6 +215,7 @@ public static class EventEndpoints
             IsAllDay = request.IsAllDay,
             RecurrenceRule = rrule,
             TalkRoomSlug = string.IsNullOrWhiteSpace(request.TalkRoomSlug) ? null : request.TalkRoomSlug.Trim(),
+            RoomId = request.RoomId,
             CreatedUtc = now,
             UpdatedUtc = now,
         };
@@ -270,7 +276,7 @@ public static class EventEndpoints
         {
             CalendarId: null, Title: null, Description: null, StartUtc: null, EndUtc: null,
             IsAllDay: null, RecurrenceRule: null, ClearRecurrence: null, TalkRoomSlug: null, ParticipantIds: null,
-            GenerateArtifacts: null,
+            GenerateArtifacts: null, RoomId: null, ClearRoom: null,
         };
 
         // Участник встречи может настроить себе напоминание, но не переписать чужую встречу.
@@ -328,7 +334,7 @@ public static class EventEndpoints
         {
             CalendarId: null, Title: null, Description: null, IsAllDay: null,
             RecurrenceRule: null, ClearRecurrence: null, TalkRoomSlug: null, ParticipantIds: null,
-            GenerateArtifacts: null,
+            GenerateArtifacts: null, RoomId: null, ClearRoom: null,
         };
 
         if (!onlyTimeChanged)
@@ -429,6 +435,29 @@ public static class EventEndpoints
         if (end <= start)
         {
             return Problem("Встреча заканчивается раньше, чем начинается", "Конец должен быть позже начала.");
+        }
+
+        if (request.ClearRoom == true)
+        {
+            source.RoomId = null;
+        }
+        else if (request.RoomId is { } roomId)
+        {
+            if (await ValidateRoomAsync(db, roomId, start, end, source.Id, ct) is { } roomError)
+            {
+                return roomError;
+            }
+
+            source.RoomId = roomId;
+        }
+        else if (source.RoomId is { } existingRoomId && (start != source.StartUtc || end != source.EndUtc))
+        {
+            // Время серии сдвинулось, а переговорка осталась прежней — проверяем, что она
+            // всё ещё свободна на новое время, а не только на старое.
+            if (await ValidateRoomAsync(db, existingRoomId, start, end, source.Id, ct) is { } roomError)
+            {
+                return roomError;
+            }
         }
 
         if (start != source.StartUtc)
@@ -620,6 +649,7 @@ public static class EventEndpoints
         .Include(x => x.Artifacts)
         .Include(x => x.Overrides)
         .Include(x => x.Reminders)
+        .Include(x => x.Room)
         .AsSplitQuery()
         .Where(x => x.Calendar!.OwnerId == viewerId || x.Participants.Any(p => p.UserId == viewerId));
 
@@ -765,4 +795,40 @@ public static class EventEndpoints
 
     private static IResult Problem(string title, string? detail) =>
         Results.Problem(title: title, detail: detail, statusCode: StatusCodes.Status400BadRequest);
+
+    /// <summary>
+    /// Переговорка (Этап 7.2) — общий ресурс: нельзя забронировать то же время в двух встречах
+    /// сразу. Смотрим только на прямое пересечение окна [start, end) — этого достаточно,
+    /// потому что <see cref="OccurrenceCalculator.Expand"/> уже отдаёт лишь то, что окно задевает.
+    /// </summary>
+    private static async Task<IResult?> ValidateRoomAsync(
+        TalkatonDbContext db,
+        Guid? roomId,
+        DateTime start,
+        DateTime end,
+        Guid? excludeEventId,
+        CancellationToken ct)
+    {
+        if (roomId is not { } id)
+        {
+            return null;
+        }
+
+        var exists = await db.Rooms.AnyAsync(x => x.Id == id, ct);
+        if (!exists)
+        {
+            return Problem("Неизвестная переговорка", "Такой комнаты нет в списке переговорок.");
+        }
+
+        var candidates = await db.Events
+            .Include(x => x.Overrides)
+            .Where(x => x.RoomId == id && x.Id != excludeEventId)
+            .Where(x => x.RecurrenceRule != null || x.Overrides.Count > 0 || (x.EndUtc > start && x.StartUtc < end))
+            .ToListAsync(ct);
+
+        var conflict = OccurrenceCalculator.Expand(candidates, start, end).Count > 0;
+        return conflict
+            ? Problem("Переговорка занята", "На это время комната уже забронирована другой встречей.")
+            : null;
+    }
 }

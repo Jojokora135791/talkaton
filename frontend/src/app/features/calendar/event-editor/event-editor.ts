@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Calendar, ParticipantList, User } from '../../../core/api/models';
+import { Calendar, ParticipantList, Room, User } from '../../../core/api/models';
 import {
   addMinutes,
   fromDateTimeInputs,
@@ -9,6 +9,7 @@ import {
   toTimeInput,
 } from '../../../core/time/date-utils';
 import { recurrenceOptions } from '../../../core/time/recurrence-text';
+import { AvailabilityGrid } from '../availability-grid/availability-grid';
 
 /** Что редактор отдаёт наружу. Страница сама решает, создать встречу или обновить. */
 export interface EventDraft {
@@ -23,6 +24,7 @@ export interface EventDraft {
   participantIds: string[];
   reminderMinutesBefore: number;
   generateArtifacts?: boolean;
+  roomId: string | null;
 }
 
 /** Начальное состояние формы: либо пустая встреча на выбранный слот, либо существующая. */
@@ -41,6 +43,7 @@ export interface EventEditorSeed {
   reminderMinutesBefore: number;
   /** Есть ли у встречи запись/протокол — тумблер «Запись + ИИ-протокол» при правке. */
   hasArtifacts: boolean;
+  roomId: string | null;
 }
 
 const REMINDER_CHOICES = [0, 5, 10, 15, 30];
@@ -61,10 +64,16 @@ const COLOR_TO_CALENDAR: Record<string, string> = {
   amber: 'задачи',
 };
 
+/** «11:30» → 690. Кривой ввод не должен ронять грид занятости — тогда просто нет подсветки. */
+function parseMinutesOfDay(time: string): number | null {
+  const [hours, minutes] = time.split(':').map(Number);
+  return Number.isFinite(hours) && Number.isFinite(minutes) ? hours * 60 + minutes : null;
+}
+
 /** Диалог «Создать встречу» и правки существующей. */
 @Component({
   selector: 'app-event-editor',
-  imports: [FormsModule],
+  imports: [FormsModule, AvailabilityGrid],
   templateUrl: './event-editor.html',
   styleUrl: './event-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,6 +83,7 @@ export class EventEditor {
   readonly calendars = input.required<readonly Calendar[]>();
   readonly people = input.required<readonly User[]>();
   readonly participantLists = input.required<readonly ParticipantList[]>();
+  readonly rooms = input.required<readonly Room[]>();
 
   readonly saved = output<EventDraft>();
   readonly cancelled = output<void>();
@@ -92,6 +102,7 @@ export class EventEditor {
   protected readonly talkRoomSlug = linkedSignal(() => this.seed().talkRoomSlug);
   protected readonly reminder = linkedSignal(() => this.seed().reminderMinutesBefore);
   protected readonly participants = linkedSignal(() => new Set(this.seed().participantIds));
+  protected readonly roomId = linkedSignal(() => this.seed().roomId);
 
   // Тумблеры и палитра тоже читаются из seed: при правке они должны показывать
   // состояние самой встречи, а не дефолты формы создания.
@@ -123,6 +134,11 @@ export class EventEditor {
     const chosen = this.participants();
     return this.people().filter((p) => chosen.has(p.id));
   });
+
+  /** День для грида занятости (Этап 7.1) — тот же, что выбран в поле «Дата». */
+  protected readonly gridDay = computed(() => fromDateTimeInputs(this.dateValue(), '00:00') ?? this.seed().start);
+  protected readonly rangeStartMinutes = computed(() => parseMinutesOfDay(this.startTime()));
+  protected readonly rangeEndMinutes = computed(() => parseMinutesOfDay(this.endTime()));
 
   protected reminderLabel(minutes: number): string {
     return minutes === 0 ? 'Не напоминать' : `За ${minutes} мин`;
@@ -243,6 +259,7 @@ export class EventEditor {
       participantIds: [...this.participants()],
       reminderMinutesBefore: this.reminder(),
       generateArtifacts: this.recordAndAi(),
+      roomId: this.roomId(),
     });
   }
 }

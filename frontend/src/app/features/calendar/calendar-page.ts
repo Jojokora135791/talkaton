@@ -231,6 +231,7 @@ export class CalendarPage {
       participantIds: [],
       reminderMinutesBefore: 10,
       hasArtifacts: false,
+      roomId: null,
     });
   }
 
@@ -255,6 +256,7 @@ export class CalendarPage {
       participantIds: details.participants.filter((x) => !x.isOrganizer).map((x) => x.userId),
       reminderMinutesBefore: occurrence.reminderMinutesBefore ?? 10,
       hasArtifacts: occurrence.artifactCount > 0,
+      roomId: occurrence.roomId,
     });
   }
 
@@ -279,6 +281,7 @@ export class CalendarPage {
         participantIds: draft.participantIds,
         reminderMinutesBefore: draft.reminderMinutesBefore,
         generateArtifacts: draft.generateArtifacts,
+        roomId: draft.roomId,
       });
     } else if (seed.eventId) {
       this.store.updateEvent(
@@ -297,6 +300,10 @@ export class CalendarPage {
           participantIds: draft.participantIds,
           reminderMinutesBefore: draft.reminderMinutesBefore,
           generateArtifacts: draft.generateArtifacts,
+          roomId: draft.roomId ?? undefined,
+          // Пустая переговорка значит «снять бронь», а не «не трогать» — тем же приёмом,
+          // что и clearRecurrence выше.
+          clearRoom: draft.roomId === null,
         },
         'series',
       );

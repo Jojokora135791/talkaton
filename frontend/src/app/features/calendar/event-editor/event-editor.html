@@ -172,6 +172,23 @@
       </label>
     }
 
+    @if (rooms().length > 0) {
+      <label class="field">
+        <span class="field__label">Переговорка (для очной/гибридной встречи)</span>
+        <select
+          name="meetingRoom"
+          class="field__input"
+          [ngModel]="roomId()"
+          (ngModelChange)="roomId.set($event)"
+        >
+          <option [ngValue]="null">Без переговорки</option>
+          @for (room of rooms(); track room.id) {
+            <option [ngValue]="room.id">{{ room.name }} · до {{ room.capacity }} чел.</option>
+          }
+        </select>
+      </label>
+    }
+
     <div class="field">
       <span class="field__label">Добавить участников списком</span>
 
@@ -249,6 +266,18 @@
         </ul>
       </details>
     </div>
+
+    @if (chosenPeople().length > 0 && !isAllDay()) {
+      <div class="field">
+        <span class="field__label">Занятость участников</span>
+        <app-availability-grid
+          [people]="chosenPeople()"
+          [day]="gridDay()"
+          [rangeStartMinutes]="rangeStartMinutes()"
+          [rangeEndMinutes]="rangeEndMinutes()"
+        />
+      </div>
+    }
 
     <label class="field">
       <span class="field__label">Описание</span>
