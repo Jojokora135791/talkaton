@@ -5,6 +5,9 @@ export interface User {
   displayName: string;
   timeZoneId: string;
   avatarColorIndex: number;
+  /** Резервное время до/после встречи (Этап 7.5), в минутах. */
+  bufferBeforeMinutes: number;
+  bufferAfterMinutes: number;
 }
 
 export interface Calendar {

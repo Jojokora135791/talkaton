@@ -77,12 +77,27 @@ public static class AvailabilityEndpoints
             .AsSplitQuery()
             .ToListAsync(ct);
 
+        // Буфер (Этап 7.5) — своя настройка каждого человека, растягивает занятый интервал
+        // в обе стороны, чтобы соседнюю встречу не ставили впритык.
+        var buffers = await db.Users
+            .Where(x => ids.Contains(x.Id))
+            .Select(x => new { x.Id, x.BufferBeforeMinutes, x.BufferAfterMinutes })
+            .ToDictionaryAsync(x => x.Id, ct);
+
         var result = new List<UserAvailabilityDto>(ids.Count);
         foreach (var userId in ids)
         {
             var mine = events.Where(x => x.Participants.Any(p => p.UserId == userId && p.Status != ParticipantStatus.Declined));
             var occurrences = OccurrenceCalculator.Expand(mine, windowStart, windowEnd);
-            var busy = MergeIntervals(occurrences.Select(x => (x.StartUtc, x.EndUtc)))
+
+            var before = buffers.TryGetValue(userId, out var buffer) ? buffer.BufferBeforeMinutes : 0;
+            var after = buffers.TryGetValue(userId, out buffer) ? buffer.BufferAfterMinutes : 0;
+
+            var padded = occurrences.Select(x => (
+                Start: x.StartUtc.AddMinutes(-before),
+                End: x.EndUtc.AddMinutes(after)));
+
+            var busy = MergeIntervals(padded)
                 .Select(x => new BusyBlockDto(x.Start, x.End))
                 .ToList();
 

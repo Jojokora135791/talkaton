@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Talkaton.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using Talkaton.Infrastructure.Persistence;
 namespace Talkaton.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TalkatonDbContext))]
-    partial class TalkatonDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260906225631_AddRoundRobinCursor")]
+    partial class AddRoundRobinCursor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.10");
@@ -354,16 +357,6 @@ namespace Talkaton.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("AvatarColorIndex")
                         .HasColumnType("INTEGER");
-
-                    b.Property<int>("BufferAfterMinutes")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("BufferBeforeMinutes")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
 
                     b.Property<DateTime>("CreatedUtc")
                         .HasColumnType("TEXT");

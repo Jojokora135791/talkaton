@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Calendar, DelegationPerson, ParticipantList, Room, User } from '../../../core/api/models';
 import {
@@ -10,6 +10,7 @@ import {
 } from '../../../core/time/date-utils';
 import { recurrenceOptions } from '../../../core/time/recurrence-text';
 import { AvailabilityGrid } from '../availability-grid/availability-grid';
+import { TalkatonApi } from '../../../core/api/talkaton-api';
 
 /** Что редактор отдаёт наружу. Страница сама решает, создать встречу или обновить. */
 export interface EventDraft {
@@ -81,6 +82,8 @@ function parseMinutesOfDay(time: string): number | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventEditor {
+  private readonly api = inject(TalkatonApi);
+
   readonly seed = input.required<EventEditorSeed>();
   readonly calendars = input.required<readonly Calendar[]>();
   readonly people = input.required<readonly User[]>();
@@ -211,6 +214,23 @@ export class EventEditor {
     if (list.members.length === 0) return false;
     const chosen = this.participants();
     return list.members.every((m) => chosen.has(m.id));
+  }
+
+  protected readonly roundRobinPick = signal<string | null>(null);
+
+  /**
+   * Ротация по очереди (Этап 7.3): вместо приглашения всех из списка добавляем только
+   * одного — того, чья очередь по кругу. Бэкенд сам сдвигает курсор ротации.
+   */
+  protected pickRoundRobin(list: ParticipantList, event: MouseEvent): void {
+    event.stopPropagation();
+    this.api.nextRoundRobinMember(list.id).subscribe({
+      next: (person) => {
+        this.participants.update((chosen) => new Set(chosen).add(person.id));
+        this.roundRobinPick.set(`По очереди назначен: ${person.displayName}`);
+      },
+      error: () => this.roundRobinPick.set('Не удалось назначить по очереди — список пуст?'),
+    });
   }
 
   protected toggleList(list: ParticipantList): void {

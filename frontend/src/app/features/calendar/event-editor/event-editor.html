@@ -227,8 +227,19 @@
               {{ list.name }}
               <span class="cn">{{ list.members.length }}</span>
             </button>
+            <button
+              type="button"
+              class="round-robin-btn"
+              title="Назначить одного человека из списка по очереди"
+              (click)="pickRoundRobin(list, $event)"
+            >
+              🔁
+            </button>
           }
         </div>
+        @if (roundRobinPick(); as message) {
+          <p class="round-robin-hint">{{ message }}</p>
+        }
       }
 
       @if (chosenPeople().length > 0) {

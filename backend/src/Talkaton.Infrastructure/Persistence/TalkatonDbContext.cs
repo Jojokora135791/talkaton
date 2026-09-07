@@ -40,6 +40,8 @@ public class TalkatonDbContext(DbContextOptions<TalkatonDbContext> options) : Db
             user.Property(x => x.DisplayName).HasMaxLength(200).IsRequired();
             user.Property(x => x.NormalizedName).HasMaxLength(200).IsRequired();
             user.Property(x => x.TimeZoneId).HasMaxLength(64).IsRequired();
+            user.Property(x => x.BufferBeforeMinutes).HasDefaultValue(0);
+            user.Property(x => x.BufferAfterMinutes).HasDefaultValue(0);
             user.HasIndex(x => x.NormalizedName).IsUnique();
         });
 

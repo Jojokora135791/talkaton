@@ -135,6 +135,11 @@ export class TalkatonApi {
     return this.http.get<User>(`/api/users/${userId}`);
   }
 
+  /** Резервное время до/после встречи (Этап 7.5) — своя настройка. */
+  updateMyBuffer(bufferBeforeMinutes: number, bufferAfterMinutes: number): Observable<User> {
+    return this.http.patch<User>('/api/users/me/buffer', { bufferBeforeMinutes, bufferAfterMinutes });
+  }
+
   /** Делегирование (Этап 7.6): кому я разрешил управлять моим календарём. */
   myDelegates(): Observable<DelegationPerson[]> {
     return this.http.get<DelegationPerson[]>('/api/delegations/my-delegates');
@@ -163,6 +168,11 @@ export class TalkatonApi {
 
   deleteParticipantList(id: string): Observable<void> {
     return this.http.delete<void>(`/api/participant-lists/${id}`);
+  }
+
+  /** Ротация по очереди (Этап 7.3): следующий человек из списка, кто ещё не получал встречу. */
+  nextRoundRobinMember(listId: string): Observable<User> {
+    return this.http.post<User>(`/api/participant-lists/${listId}/round-robin/next`, null);
   }
 
   private scopeParams(scope: EditScope, occurrenceStartUtc?: string): HttpParams {
